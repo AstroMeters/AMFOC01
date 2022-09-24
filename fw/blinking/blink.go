@@ -1,9 +1,15 @@
 package main
 
 import (
+	//"tmc5130"
+
+
 	"machine"
 	"time"
-        "fmt"
+  "fmt"
+	"tmc5130"
+	//"tmc5130"
+
 )
 
 var period uint64 = 1e9 / 500
@@ -39,7 +45,24 @@ func main() {
 	//	return
 	//}
 
-	for { 
+	type SPIConfig struct {
+		Frequency uint32
+		SCK       Pin
+		SDO       Pin
+		SDI       Pin
+		Mode      uint8
+	}
+
+	machine.SPI0.Configure(machine.SPIConfig{SCK: machine.GPIO6, SDO: machine.GPIO, SDI: machine.GPIO7})
+	spi_cs := machine.GPIO5
+
+  //sensor := bmp180.New(machine.I2C0)
+	motor := tmc5130.New(machine.SPI0, spi_cs)
+  motor.Configure()
+
+
+	for {
+		            motor.GetXACT()
                 println(ser.Buffered() )
 
 //		if ser.Buffered() > 0 {
