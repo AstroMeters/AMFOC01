@@ -15,11 +15,6 @@ import (
 	"math/big"
 )
 
-var	usb_STRING_PRODUCT      = "AMFOC01A"
-var	usb_STRING_MANUFACTURER = "AstroMeters"
-
-
-
 const (
 		TEMP_INTERNAL = machine.ADC1
 		TEMP_EXTERNAL = machine.ADC2
@@ -128,7 +123,6 @@ func main() {
 				for ( (strings.Index(input_string, ":") + strings.Index(input_string, "#"))>0 ) {
 					cmd := input_string[strings.Index(input_string, ":")+1:strings.Index(input_string, "#")]
 					input_string = input_string[strings.Index(input_string, "#")+1:]
-					//println("CMD:", cmd)
 					if(len(cmd) == 1){cmd+=" "}
 					switch cmd[0:2] {
 						case "C ":
@@ -245,44 +239,8 @@ func main() {
 					}
 				}
 		}
-		//println(input_string)
+    //println("TEXT>", "  ADC: ", input0.Get())
 
-		// switch os := runtime.GOOS; os {
-		// 	case "darwin":
-		// 		fmt.Println("OS X.")
-		// 	case "linux":
-		// 		fmt.Println("Linux.")
-		// 	default:
-		// 		// freebsd, openbsd,
-		// 		// plan9, windows...
-		// 		fmt.Printf("%s.\n", os)
-		// 	}
-								//motor.GetRegister(0x01)
-//								xa := motor.GetXACTUAL()
-								//println(xa.String())
-								//println(xa.XACTUAL)
-
-								//println("rychlost")
-								//motor.GetVACTUAL()
-								//println(xb.String())
-								//println(xb.VACTUAL)
-
-								// if (motor.GetVACTUAL().VACTUAL == 0){
-								// 	time.Sleep(time.Millisecond*500)
-								// 	trg += 0xfff;
-								// 	motor.SetXTARGET(int(trg))
-								// 	//motor.SetRegister(0xAD,trg); //XACTUAL=0
-								// }
-
-								//a = motor.GetRegister(0x04)
-								//println(a)
-
-								//mstat := motor.InputStatus()
-								//println(mstat.String())
-
-      //println("TEXT>", "  ADC: ", input0.Get())
-
-			time.Sleep(time.Millisecond * 10)
-		//}
+		time.Sleep(time.Millisecond * 10)
 	}
 }
