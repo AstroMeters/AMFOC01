@@ -1,3 +1,4 @@
 [submodule "fw/MoonLite/src/fw/MoonLite/src/tinygo.org/x/drivers"]
 	path = fw/MoonLite/src/fw/MoonLite/src/tinygo.org/x/drivers
 	url = git@github.com:roman-dvorak/tinygo-drivers.git
+        branch = tmc5130
