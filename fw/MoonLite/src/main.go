@@ -1,8 +1,5 @@
 package main
 
-
-
-
 import (
 	//"tmc5130"
 	"machine"
@@ -11,8 +8,15 @@ import (
 	//"tmc5130"
 	//"tmc5130"
 	"tinygo.org/x/drivers/tmc5130"
+	"image/color"
+	"tinygo.org/x/drivers/st7789"
 	"strings"
 	"math/big"
+
+	// "tinygo.org/x/tinyfont/freemono"
+	// "tinygo.org/x/tinyfont/freesans"
+	// "tinygo.org/x/tinyfont/freeserif"
+	// "tinygo.org/x/tinyfont/gophers"
 )
 
 const (
@@ -20,6 +24,13 @@ const (
 		TEMP_EXTERNAL = machine.ADC2
 		BTN_EXT = machine.GPIO26
 		BTN_EXT_ADC = machine.ADC0
+
+		IPS_CS = machine.GPIO9
+		IPS_DC = machine.GPIO10
+		IPS_RST = machine.GPIO11
+		IPS_BL = machine.GPIO8
+
+		TMC_CS = machine.GPIO5
 )
 
 type focuser_status struct {
@@ -67,15 +78,57 @@ func main() {
 
     pwm3 := machine.PWM4
 
+
 		machine.SPI0.Configure(machine.SPIConfig{
 				SCK: machine.GPIO6,
 				SDO: machine.GPIO7,
 				SDI: machine.GPIO4,
 				Mode: 3})
+	  machine.SPI0.SetBaudRate(115200*32)
 
-	  machine.SPI0.SetBaudRate(115200)
+	display := st7789.New(machine.SPI0, IPS_RST, IPS_DC, IPS_CS, IPS_BL)
+	display.Configure(st7789.Config{
+		//Rotation:   st7789.NO_ROTATION,
+		RowOffset:  80,
+		ColumnOffset: 0,
+		FrameRate:  st7789.FRAMERATE_111,
+		VSyncLines: st7789.MAX_VSYNC_SCANLINES,
+		Width:        240,
+		Height:       240,
+	})
+
+	width, height := display.Size()
+	machine.GPIO9.Configure(machine.PinConfig{Mode: machine.PinOutput})
+
+	white := color.RGBA{255, 255, 255, 255}
+	red := color.RGBA{255, 0, 0, 255}
+	blue := color.RGBA{0, 0, 255, 255}
+	green := color.RGBA{0, 255, 0, 255}
+	black := color.RGBA{0, 0, 0, 255}
+	aaa := color.RGBA{70, 70, 70, 255}
+
+	display.FillScreen(black)
+
+	display.FillRectangle(0, 0, width/2, height/2, white)
+	display.FillRectangle(width/2, 0, width/2, height/2, red)
+	display.FillRectangle(0, height/2, width/2, height/2, green)
+	display.FillRectangle(width/2, height/2, width/2, height/2, blue)
+	display.FillRectangle(width/4, height/4, width/2, height/2, black)
+
+	display.DrawFastHLine(10, 230, 100, aaa)
+
+  //machine.GPIO9.High()
+
+		// machine.SPI0.Configure(machine.SPIConfig{
+		// 		SCK: machine.GPIO6,
+		// 		SDO: machine.GPIO7,
+		// 		SDI: machine.GPIO4,
+		// 		Mode: 3})
+		//
+	  // machine.SPI0.SetBaudRate(115200)
 		motor := tmc5130.New(machine.SPI0, machine.GPIO5)
 		motor.Configure()
+
 
 	  pwm3.Configure(machine.PWMConfig{ Period: 1e9/4 })
 
