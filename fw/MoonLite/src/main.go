@@ -31,6 +31,19 @@ const (
 		IPS_BL = machine.GPIO8
 
 		TMC_CS = machine.GPIO5
+
+		SPI_CLK = machine.GPIO6
+		SPI_MOSI = machine.GPIO7
+		SPI_MISO = machine.GPIO4
+)
+
+var (
+		white = color.RGBA{255, 255, 255, 255}
+		red = color.RGBA{255, 0, 0, 255}
+		blue = color.RGBA{0, 0, 255, 255}
+		green = color.RGBA{0, 255, 0, 255}
+		black = color.RGBA{0, 0, 0, 255}
+		aaa = color.RGBA{70, 70, 70, 255}
 )
 
 type focuser_status struct {
@@ -67,7 +80,6 @@ func main() {
 		time.Sleep(time.Millisecond * 1000)
     ser := machine.Serial
 
-    //fmt.Println("start")
 		var FocuserStatus focuser_status
 		FocuserStatus.scale = 1000
 
@@ -80,11 +92,12 @@ func main() {
 
 
 		machine.SPI0.Configure(machine.SPIConfig{
-				SCK: machine.GPIO6,
-				SDO: machine.GPIO7,
-				SDI: machine.GPIO4,
+				SCK: SPI_CLK,
+				SDO: SPI_MOSI,
+				SDI: SPI_MISO,
 				Mode: 3})
 	  machine.SPI0.SetBaudRate(115200*32)
+
 
 	display := st7789.New(machine.SPI0, IPS_RST, IPS_DC, IPS_CS, IPS_BL)
 	display.Configure(st7789.Config{
@@ -98,67 +111,51 @@ func main() {
 	})
 
 	width, height := display.Size()
-	machine.GPIO9.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	IPS_CS.Configure(machine.PinConfig{Mode: machine.PinOutput})
 
-	white := color.RGBA{255, 255, 255, 255}
-	red := color.RGBA{255, 0, 0, 255}
-	blue := color.RGBA{0, 0, 255, 255}
-	green := color.RGBA{0, 255, 0, 255}
-	black := color.RGBA{0, 0, 0, 255}
-	aaa := color.RGBA{70, 70, 70, 255}
 
 	display.FillScreen(black)
 
 	display.FillRectangle(0, 0, width/2, height/2, white)
 	display.FillRectangle(width/2, 0, width/2, height/2, red)
 	display.FillRectangle(0, height/2, width/2, height/2, green)
-	display.FillRectangle(width/2, height/2, width/2, height/2, blue)
+	//display.FillRectangle(width/2, height/2, width/2, height/2, blue)
 	display.FillRectangle(width/4, height/4, width/2, height/2, black)
 
 	display.DrawFastHLine(10, 230, 100, aaa)
 
-  //machine.GPIO9.High()
+	motor := tmc5130.New(machine.SPI0, machine.GPIO5)
+	motor.Configure()
 
-		// machine.SPI0.Configure(machine.SPIConfig{
-		// 		SCK: machine.GPIO6,
-		// 		SDO: machine.GPIO7,
-		// 		SDI: machine.GPIO4,
-		// 		Mode: 3})
-		//
-	  // machine.SPI0.SetBaudRate(115200)
-		motor := tmc5130.New(machine.SPI0, machine.GPIO5)
-		motor.Configure()
+	pwm3.Configure(machine.PWMConfig{ Period: 1e9/4 })
 
+	ch3, _:= pwm3.Channel(25)
+	pwm3.Set(ch3, pwm3.Top()/2)
 
-	  pwm3.Configure(machine.PWMConfig{ Period: 1e9/4 })
+	time.Sleep(time.Millisecond * 1000)
 
-	  ch3, _:= pwm3.Channel(25)
-	  pwm3.Set(ch3, pwm3.Top()/2)
+	motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE,			0x00000000); //GCONF
+	motor.SetRegister(tmc5130.CHOPCONF|tmc5130.WRITE,	0x000101D5); //CHOPCONF: TOFF=5, HSTRT=5, HEND=3, TBL=2, CHM=0 (spreadcycle)
+	//motor.SetRegister(0x90,0x00070603); //IHOLD_IRUN: IHOLD=3, IRUN=10 (max.current), IHOLDDELAY=6
+	//motor.SetRegister(0x90,(2 &0b11111)<<0|(2 &0b11111)<<8|(1&0b1111)<<16);
+	motor.SetCurrent(1,10, 0)
+	motor.SetRegister(tmc5130.TPOWERDOWN|tmc5130.WRITE,10)
+	motor.SetRegister(tmc5130.PWM_CONF|tmc5130.WRITE,	0x00000000)
+	//PWM_CONF: autoscale=1, 2/1024 Fclk, Switch amp limit=200, grad=1
+	motor.SetRegister(tmc5130.PWM_CONF|tmc5130.WRITE, 	0x000401C8)
 
-	 time.Sleep(time.Millisecond * 1000)
+	motor.SetRegister(tmc5130.A1|tmc5130.WRITE,				1000)
+	motor.SetRegister(tmc5130.V1|tmc5130.WRITE,				100000)
+	motor.SetRegister(tmc5130.AMAX|tmc5130.WRITE,			5000)
+	motor.SetRegister(tmc5130.VMAX|tmc5130.WRITE,			100000)
+	motor.SetRegister(tmc5130.D1|tmc5130.WRITE,				1400)
+	motor.SetRegister(tmc5130.VSTOP|tmc5130.WRITE, 		10)
 
-	 motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE,			0x00000000); //GCONF
-	 motor.SetRegister(tmc5130.CHOPCONF|tmc5130.WRITE,	0x000101D5); //CHOPCONF: TOFF=5, HSTRT=5, HEND=3, TBL=2, CHM=0 (spreadcycle)
-	 //motor.SetRegister(0x90,0x00070603); //IHOLD_IRUN: IHOLD=3, IRUN=10 (max.current), IHOLDDELAY=6
-	 //motor.SetRegister(0x90,(2 &0b11111)<<0|(2 &0b11111)<<8|(1&0b1111)<<16);
-	 motor.SetCurrent(1,10, 0)
-	 motor.SetRegister(tmc5130.TPOWERDOWN|tmc5130.WRITE,10)
-	 motor.SetRegister(tmc5130.PWM_CONF|tmc5130.WRITE,	0x00000000)
-	 //PWM_CONF: autoscale=1, 2/1024 Fclk, Switch amp limit=200, grad=1
-	 motor.SetRegister(tmc5130.PWM_CONF|tmc5130.WRITE, 	0x000401C8)
+	motor.SetRegister(tmc5130.RAMPMODE|tmc5130.WRITE,	0)
 
-	 motor.SetRegister(tmc5130.A1|tmc5130.WRITE,				1000)
-	 motor.SetRegister(tmc5130.V1|tmc5130.WRITE,				100000)
-	 motor.SetRegister(tmc5130.AMAX|tmc5130.WRITE,			5000)
-	 motor.SetRegister(tmc5130.VMAX|tmc5130.WRITE,			100000)
-	 motor.SetRegister(tmc5130.D1|tmc5130.WRITE,				1400)
-	 motor.SetRegister(tmc5130.VSTOP|tmc5130.WRITE, 		10)
-
-	 motor.SetRegister(tmc5130.RAMPMODE|tmc5130.WRITE,	0)
-
-	 motor.SetRegister(tmc5130.XACTUAL|tmc5130.WRITE,		0)
-	 motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,		0)
- 	//	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,10000);
+	motor.SetRegister(tmc5130.XACTUAL|tmc5130.WRITE,		0)
+	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,		0)
+	//	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,10000);
 
 	//trg := 0
 	var input_string string
