@@ -1,4 +1,4 @@
-20883655595520010
+20897125458485870
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -57722,6 +57722,13 @@ Mlab_Batery
 4
 4
 Mlab_Batery
+4XLTO1865V01A
+
+
+0
+24
+5
+Mlab_Batery
 BH23APC
 23A
 23A
@@ -57745,6 +57752,13 @@ BX0037_nez_sroubu
 Mlab_Batery
 CH28-2032
 Baterka 2032
+
+0
+2
+2
+Mlab_Batery
+LTO1865-13_D19.0mm_P7.50mm
+
 
 0
 2
@@ -58125,8 +58139,8 @@ LED_1206
 Diode Mini-MELF Standard
 Diode Mini-MELF Standard
 0
-2
-2
+0
+0
 Mlab_DISPLAY
 EA_OLEDM128-6GGA
 
@@ -58134,6 +58148,20 @@ EA_OLEDM128-6GGA
 0
 26
 26
+Mlab_DISPLAY
+FPC_12_0.7mm
+
+
+0
+12
+12
+Mlab_DISPLAY
+FPC_12_0.7mm_bend
+
+
+0
+12
+12
 Mlab_DISPLAY
 FYS-40011DS-11
 
@@ -58668,6 +58696,13 @@ dira_2mm
 0
 Mlab_Mechanical
 dira_3mm
+
+
+0
+0
+0
+Mlab_Mechanical
+dira_19,2mm
 
 
 0
@@ -59639,6 +59674,13 @@ SW_PUSH_SMALL
 0
 4
 2
+Mlab_SW
+SW_Push_1P1T_NO_Vertical_Wuerth_434133025816
+https://katalog.we-online.com/em/datasheet/434133025816.pdf
+tactile switch Wurth Wuerth
+0
+4
+4
 Mlab_T
 QFN-20-1EP_5x5mm_Pitch0.65mm
 20-Lead Plastic Quad Flat, No Lead Package (MQ) - 5x5x0.9 mm Body [QFN]; (see Microchip Packaging Specification 00000049BS.pdf)
