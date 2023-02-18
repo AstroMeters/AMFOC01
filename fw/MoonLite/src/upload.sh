@@ -1,3 +1,3 @@
 
 export GOPATH=${PWD}/..
-tinygo flash -target=pico main.go -v
+tinygo flash -target=amfoc01 main.go -v

@@ -1,7 +1,7 @@
 package main
 
 import (
-	//"tmc5130"
+	//"tinygo.org/x/drivers"
 	"machine"
 	"time"
   "fmt"
@@ -9,10 +9,18 @@ import (
 	//"tmc5130"
 	"tinygo.org/x/drivers/tmc5130"
 	"image/color"
-	"tinygo.org/x/drivers/st7789"
+	//"tinygo.org/x/drivers/st7789"
+	"tinygo.org/x/drivers/sh1106"
+//	"tinygo.org/x/drivers/ds18b20"
 	"strings"
 	"math/big"
+	"strconv"
+	//
+	// "tinygo.org/x/tinyfont/freeserif"
+	// "tinygo.org/x/tinyfont/gophers"
 
+	"tinygo.org/x/tinyfont"
+	"tinygo.org/x/tinyfont/freesans"
 	// "tinygo.org/x/tinyfont/freemono"
 	// "tinygo.org/x/tinyfont/freesans"
 	// "tinygo.org/x/tinyfont/freeserif"
@@ -48,6 +56,7 @@ var (
 
 type focuser_status struct {
 		new_pos int
+		actual_pos int
 		temp_coef int
 		temp_coef_offset int
 		steeper_speed	uint8
@@ -74,65 +83,74 @@ func int_external_button(p machine.Pin) {
 
 }
 
-func main() {
-    // This program is specific to the Raspberry Pi Pico.
-    //
-		time.Sleep(time.Millisecond * 1000)
-    ser := machine.Serial
 
-		var FocuserStatus focuser_status
-		FocuserStatus.scale = 1000
+func getRainbowRGB(i uint8) color.RGBA {
+	if i < 85 {
+		return color.RGBA{i * 3, 255 - i*3, 0, 255}
+	} else if i < 170 {
+		i -= 85
+		return color.RGBA{255 - i*3, 0, i * 3, 255}
+	}
+	i -= 170
+	return color.RGBA{0, i * 3, 255 - i*3, 255}
+}
+
+
+// func drawDisp(display sh1106) {
+// 	display.ClearDisplay()
+// 	tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AstroMeters", color.RGBA{255, 255, 255, 255})
+//     display.Display() 
+// }
+
+func main() {
+
+	time.Sleep(time.Millisecond * 1000)
+	ser := machine.Serial
+
+	var FocuserStatus focuser_status
+	FocuserStatus.scale = 1
 
     machine.InitADC()
-    input0 := machine.ADC{machine.ADC0}
-		BTN_EXT.Configure(machine.PinConfig{Mode: machine.PinOutput})
-		BTN_EXT.SetInterrupt(machine.PinRising, int_external_button)
+    //input0 := machine.ADC{machine.ADC0}
+	BTN_EXT.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	BTN_EXT.SetInterrupt(machine.PinRising, int_external_button)
 
     pwm3 := machine.PWM4
 
+	machine.SPI0.Configure(machine.SPIConfig{
+			SCK: SPI_CLK,
+			SDO: SPI_MOSI,
+			SDI: SPI_MISO,
+			Mode: 3})
+	machine.SPI0.SetBaudRate(115200*32)
+	//machine.SPI0.SetBaudRate(115200*64)
 
-		machine.SPI0.Configure(machine.SPIConfig{
-				SCK: SPI_CLK,
-				SDO: SPI_MOSI,
-				SDI: SPI_MISO,
-				Mode: 3})
-	  machine.SPI0.SetBaudRate(115200*32)
+	display := sh1106.NewSPI(machine.SPI0, IPS_DC, IPS_RST, IPS_CS)
 
-
-	display := st7789.New(machine.SPI0, IPS_RST, IPS_DC, IPS_CS, IPS_BL)
-	display.Configure(st7789.Config{
-		//Rotation:   st7789.NO_ROTATION,
-		RowOffset:  80,
-		ColumnOffset: 0,
-		FrameRate:  st7789.FRAMERATE_111,
-		VSyncLines: st7789.MAX_VSYNC_SCANLINES,
-		Width:        240,
-		Height:       240,
+	display.Configure(sh1106.Config{
+		Width:  128,
+		Height: 64,
 	})
 
-	width, height := display.Size()
 	IPS_CS.Configure(machine.PinConfig{Mode: machine.PinOutput})
-
-
-	display.FillScreen(black)
-
-	display.FillRectangle(0, 0, width/2, height/2, white)
-	display.FillRectangle(width/2, 0, width/2, height/2, red)
-	display.FillRectangle(0, height/2, width/2, height/2, green)
-	//display.FillRectangle(width/2, height/2, width/2, height/2, blue)
-	display.FillRectangle(width/4, height/4, width/2, height/2, black)
-
-	display.DrawFastHLine(10, 230, 100, aaa)
+	display.ClearBuffer()
+	display.Display() 
+	//drawDisp(&display)
 
 	motor := tmc5130.New(machine.SPI0, machine.GPIO5)
 	motor.Configure()
 
 	pwm3.Configure(machine.PWMConfig{ Period: 1e9/4 })
 
-	ch3, _:= pwm3.Channel(25)
-	pwm3.Set(ch3, pwm3.Top()/2)
 
-	time.Sleep(time.Millisecond * 1000)
+	// ds := ds18b20.New(machine.ADC2)
+	// ds.Reset()
+	// ds.SkipRom()
+	// ds.ConvertT()
+
+	// ds.Reset()
+	// ds.SkipRom()
+	// ds.ReadScratchpad()
 
 	motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE,			0x00000000); //GCONF
 	motor.SetRegister(tmc5130.CHOPCONF|tmc5130.WRITE,	0x000101D5); //CHOPCONF: TOFF=5, HSTRT=5, HEND=3, TBL=2, CHM=0 (spreadcycle)
@@ -157,13 +175,33 @@ func main() {
 	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,		0)
 	//	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,10000);
 
-	//trg := 0
+
+	motor.SetXACTUAL(50000*FocuserStatus.scale)
+	motor.SetXTARGET(50000*FocuserStatus.scale)
+
+
+	ch3, _:= pwm3.Channel(25)
+	pwm3.Set(ch3, pwm3.Top()/2)
+
 	var input_string string
-	//var cmd [][]byte
+
+	var temp int
 
 	for {
-		//println("")
-		//println("CMD", input_string)
+
+
+		//ds.Reset()
+		//ds.SkipRom()
+		//temp = ds.ReadScratchpad()
+		temp = 0
+
+		FocuserStatus.actual_pos = int(motor.GetXACTUAL().XACTUAL/int32(FocuserStatus.scale))
+
+		display.ClearBuffer()
+	 	tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AstroMeters", color.RGBA{255, 255, 255, 255})
+	 	tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 30, "Temp: "+strconv.Itoa(temp) + " C", color.RGBA{255, 255, 255, 255})
+	 	tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 47, "pos: "+strconv.Itoa(FocuserStatus.actual_pos/1000) + "", color.RGBA{255, 255, 255, 255})
+		display.Display() 
 
 		if(ser.Buffered()>0){
 				for(ser.Buffered()>0){
@@ -177,6 +215,9 @@ func main() {
 					switch cmd[0:2] {
 						case "C ":
 							// Initiate temperature conversion
+							// ds.Reset()
+							// ds.SkipRom()
+							// ds.ConvertT()
 
 						case "FG":
 							//Go to positition set by SNYYYY
@@ -214,11 +255,11 @@ func main() {
 
 						case "GP":
 							// return current position
-							fmt.Printf("%04x#\n\r", int(motor.GetXACTUAL().XACTUAL/int32(FocuserStatus.scale)))
+							fmt.Printf("%04x#\n\r", FocuserStatus.actual_pos)
 
 						case "GT":
 							// return current temperature position
-							temp := int((input0.Get()-500)/100)
+							//temp := int((input0.Get()-500)/100)
 							var sign int
 							if(temp < 0){
 								temp = -temp
@@ -245,12 +286,12 @@ func main() {
 
 						case "SF":
 							// Set fullstep mode
-							FocuserStatus.scale = 1000
+							//FocuserStatus.scale = 100000
 							//println("FS")
 
 						case "SH":
 							// Set halfstep mode
-							FocuserStatus.scale = 500
+							//FocuserStatus.scale = 100000
 							//println("HS")
 
 						case "SN":
