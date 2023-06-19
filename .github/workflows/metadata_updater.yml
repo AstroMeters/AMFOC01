@@ -12,10 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3.5.3
+    - uses: actions/checkout@v3
       with:
-          submodules: recursive
-          token: ${{ secrets.PAT }}
+        submodules: 'recursive'
 
     - name: Set up Python 3.10
       uses: actions/setup-python@v3
