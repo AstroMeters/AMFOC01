@@ -1,0 +1,28 @@
+description: Opensource focuser
+github_branch: master
+github_repo: AMFOC01
+github_url: https://github.com/AstroMeters/AMFOC01
+homepage: false
+images:
+- doc/gen/img/AMFOC01-top.png
+- doc/gen/img/AMFOC01-bottom.png
+- hw/cam_profi/docs/master-assembly_page_02.svg
+- hw/cam_profi/docs/master-assembly_page_01.svg
+- doc/gen/AMFOC01-schematic.svg
+- doc/gen/img/AMFOC01-top.svg
+mark: 50
+mod_ibom: hw/cam_profi/ibom/AMFOC01-ibom.html
+mod_scheme: doc/gen/AMFOC01-schematic.pdf
+tags:
+- astronomy
+- astrophotography
+- autonomous
+- focuser
+- focusing
+- indi
+- kstars
+- moonlite
+- space
+- telescope
+- astrometers
+title: AMFOC01
