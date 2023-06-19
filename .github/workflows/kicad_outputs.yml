@@ -29,17 +29,16 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          submodules: recursive
-          token: ${{ secrets.pat }}
-          ref: ${{ github.head_ref }}
-          
-      - uses: INTI-CMNB/KiBot@v2_dk6
-        with:
-          config: ${{ env.kibot }}/erc.kibot.yaml
-          schema: ${{ env.schema }}
-          board: ${{ env.board }}
-          dir: ${{ env.dir }}
-          
+            submodules: recursive
+            token: ${{ secrets.pat }}
+            ref: ${{ github.head_ref }}
+
+      - uses: INTI-CMNB/KiBot@v2_dk7
+          with:
+            config: ${{ env.kibot }}/erc.kibot.yaml
+            schema: ${{ env.schema }}
+            board: ${{ env.board }}
+            dir: ${{ env.dir }}
           
   DRC:
     runs-on: ubuntu-latest
@@ -51,7 +50,7 @@ jobs:
           token: ${{ secrets.pat }}
           ref: ${{ github.head_ref }}
           
-      - uses: INTI-CMNB/KiBot@v2_dk6
+      - uses: INTI-CMNB/KiBot@v2_dk7
         with:
           config: ${{ env.kibot }}/drc.kibot.yaml
           schema: ${{ env.schema }}
@@ -69,7 +68,7 @@ jobs:
           token: ${{ secrets.pat }}
           ref: ${{ github.head_ref }}
           
-      - uses: INTI-CMNB/KiBot@v2_dk6
+      - uses: INTI-CMNB/KiBot@v2_dk7
         with:
           config: ${{ env.kibot }}/schematics.kibot.yaml
           schema: ${{ env.schema }}
@@ -93,14 +92,14 @@ jobs:
           token: ${{ secrets.pat }}
           ref: ${{ github.head_ref }}
           
-      - uses: INTI-CMNB/KiBot@v2_dk6
+      - uses: INTI-CMNB/KiBot@v2_dk7
         with:
           config: ${{ env.kibot }}/placement.kibot.yaml
           schema: ${{ env.schema }}
           board: ${{ env.board }}
           dir: ${{ env.dir }}_docs
         
-      - uses: INTI-CMNB/KiBot@v2_dk6
+      - uses: INTI-CMNB/KiBot@v2_dk7
         with:
           config: ${{ env.kibot }}/xml.kibot.yaml
           schema: ${{ env.schema }}
@@ -138,7 +137,7 @@ jobs:
           token: ${{ secrets.pat }}
           ref: ${{ github.head_ref }}
           
-      - uses: INTI-CMNB/KiBot@v2_dk6
+      - uses: INTI-CMNB/KiBot@v2_dk7
         with:
           config: ${{ env.kibot }}/report.kibot.yaml
           schema: ${{ env.schema }}
@@ -162,7 +161,7 @@ jobs:
           token: ${{ secrets.pat }}
           ref: ${{ github.head_ref }}
           
-      - uses: INTI-CMNB/KiBot@v2_dk6
+      - uses: INTI-CMNB/KiBot@v2_dk7
         with:
           config: ${{ env.kibot }}/ibom.kibot.yaml
           schema: ${{ env.schema }}
@@ -191,7 +190,7 @@ jobs:
           token: ${{ secrets.pat }}
           ref: ${{ github.head_ref }}
           
-      - uses: INTI-CMNB/KiBot@v2_dk6        
+      - uses: INTI-CMNB/KiBot@v2_dk7      
         with:
           config: ${{ env.kibot }}/gerbers.kibot.yaml
           schema: ${{ env.schema }}
@@ -220,14 +219,14 @@ jobs:
           token: ${{ secrets.pat }}
           ref: ${{ github.head_ref }}
           
-      - uses: INTI-CMNB/KiBot@v2_dk6
+      - uses: INTI-CMNB/KiBot@v2_dk7
         with:
           config: ${{ env.kibot }}/cad.kibot.yaml
           schema: ${{ env.schema }}
           board: ${{ env.board }}
           dir: ${{ env.dir }}_cad
           
-      - uses: INTI-CMNB/KiBot@v2_dk6
+      - uses: INTI-CMNB/KiBot@v2_dk7
         with:
           config: ${{ env.kibot }}/render.kibot.yaml
           schema: ${{ env.schema }}
