@@ -32,7 +32,7 @@ jobs:
           submodules: recursive
           token: ${{ secrets.PAT }}
           
-      - uses: INTI-CMNB/KiBot@v2_dk7
+    - uses: INTI-CMNB/KiBot@v2_dk7
         with:
           config: ${{ env.kibot }}/erc.kibot.yaml
           schema: ${{ env.schema }}
