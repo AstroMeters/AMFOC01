@@ -10,6 +10,7 @@ images:
 - hw/cam_profi/docs/master-assembly_page_01.svg
 - doc/gen/AMFOC01-schematic.svg
 - doc/gen/img/AMFOC01-top.svg
+- doc/gen/img/AMFOC01-bottom.svg
 mark: 50
 mod_ibom: hw/cam_profi/ibom/AMFOC01-ibom.html
 mod_scheme: doc/gen/AMFOC01-schematic.pdf
