@@ -1,4 +1,7 @@
-description: Opensource focuser
+description: AMFOC01 is Open-source accurate focuser for astronomical telescopes with
+  USB-C interface. A perfect tool for precise image focusing. Focuser can be controlled
+  from your computer or trought the manual wire controller. Ideal for amateur and
+  professional astronomers with a desire to improve your observational skills.
 github_branch: master
 github_repo: AMFOC01
 github_url: https://github.com/AstroMeters/AMFOC01
@@ -6,11 +9,11 @@ homepage: false
 images:
 - doc/gen/img/AMFOC01-top.png
 - doc/gen/img/AMFOC01-bottom.png
-- hw/cam_profi/docs/master-assembly_page_02.svg
-- hw/cam_profi/docs/master-assembly_page_01.svg
 - doc/gen/AMFOC01-schematic.svg
-- doc/gen/img/AMFOC01-top.svg
 - doc/gen/img/AMFOC01-bottom.svg
+- doc/gen/img/AMFOC01-top.svg
+- hw/cam_profi/docs/master-assembly_page_01.svg
+- hw/cam_profi/docs/master-assembly_page_02.svg
 mark: 50
 mod_ibom: hw/cam_profi/ibom/AMFOC01-ibom.html
 mod_scheme: doc/gen/AMFOC01-schematic.pdf
