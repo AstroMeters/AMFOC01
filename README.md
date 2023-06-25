@@ -3,6 +3,7 @@ AMFOC01A is high quality and OpenSource focuser for various optics systems. Tele
 
 Focuser is possible to control in several ways. This can be solved by connecting the focuser to the observation computer with USB-C cable. Other way is to control focuser by cable controller. AMFOC01 can act as independect focuser for visual observation. It also reduces the vibrations and shaking caused by touching of the focusing cnob of telescope and thus improves the observation experiece.
 
+![](/doc/gen/img/AMFOC01-bottom.svg) ![](/doc/gen/img/AMFOC01-top.svg)
 
 ## Parameters
 

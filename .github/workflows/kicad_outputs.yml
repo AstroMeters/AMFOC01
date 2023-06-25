@@ -32,13 +32,14 @@ jobs:
           submodules: recursive
           token: ${{ secrets.pat }}
           ref: ${{ github.head_ref }}
-
+          
       - uses: INTI-CMNB/KiBot@v2_dk7
         with:
           config: ${{ env.kibot }}/erc.kibot.yaml
           schema: ${{ env.schema }}
           board: ${{ env.board }}
           dir: ${{ env.dir }}
+          
           
   DRC:
     runs-on: ubuntu-latest
@@ -190,7 +191,7 @@ jobs:
           token: ${{ secrets.pat }}
           ref: ${{ github.head_ref }}
           
-      - uses: INTI-CMNB/KiBot@v2_dk7      
+      - uses: INTI-CMNB/KiBot@v2_dk7        
         with:
           config: ${{ env.kibot }}/gerbers.kibot.yaml
           schema: ${{ env.schema }}
