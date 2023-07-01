@@ -36,7 +36,7 @@ const (
 		IPS_CS = machine.GPIO9
 		IPS_DC = machine.GPIO10
 		IPS_RST = machine.GPIO11
-		IPS_BL = machine.GPIO8
+		//IPS_BL = machine.GPIO8
 
 		TMC_CS = machine.GPIO5
 
@@ -115,7 +115,9 @@ func main() {
 	BTN_EXT.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	BTN_EXT.SetInterrupt(machine.PinRising, int_external_button)
 
-    pwm3 := machine.PWM4
+    pwm3 := machine.PWM3
+    pwm2 := machine.PWM2
+
 
 	machine.SPI0.Configure(machine.SPIConfig{
 			SCK: SPI_CLK,
@@ -124,6 +126,7 @@ func main() {
 			Mode: 3})
 	machine.SPI0.SetBaudRate(115200*32)
 	//machine.SPI0.SetBaudRate(115200*64)
+
 
 	display := sh1106.NewSPI(machine.SPI0, IPS_DC, IPS_RST, IPS_CS)
 
@@ -137,10 +140,23 @@ func main() {
 	display.Display() 
 	//drawDisp(&display)
 
+
+    mot_en := machine.GPIO3
+    mot_en.Configure(machine.PinConfig{Mode: machine.PinOutput})
+    mot_en.Low()
+
+
 	motor := tmc5130.New(machine.SPI0, machine.GPIO5)
 	motor.Configure()
 
 	pwm3.Configure(machine.PWMConfig{ Period: 1e9/4 })
+	pwm2.Configure(machine.PWMConfig{ Period: 1e8/4 })
+
+	// motor.SetXACTUAL(50000*FocuserStatus.scale)
+	// motor.SetXTARGET(10000*FocuserStatus.scale)
+	// for {
+	// 	println("POS>", motor.GetXACTUAL().XACTUAL)
+	// }
 
 
 	// ds := ds18b20.New(machine.ADC2)
@@ -156,7 +172,7 @@ func main() {
 	motor.SetRegister(tmc5130.CHOPCONF|tmc5130.WRITE,	0x000101D5); //CHOPCONF: TOFF=5, HSTRT=5, HEND=3, TBL=2, CHM=0 (spreadcycle)
 	//motor.SetRegister(0x90,0x00070603); //IHOLD_IRUN: IHOLD=3, IRUN=10 (max.current), IHOLDDELAY=6
 	//motor.SetRegister(0x90,(2 &0b11111)<<0|(2 &0b11111)<<8|(1&0b1111)<<16);
-	motor.SetCurrent(1,10, 0)
+	motor.SetCurrent(0,50, 0)
 	motor.SetRegister(tmc5130.TPOWERDOWN|tmc5130.WRITE,10)
 	motor.SetRegister(tmc5130.PWM_CONF|tmc5130.WRITE,	0x00000000)
 	//PWM_CONF: autoscale=1, 2/1024 Fclk, Switch amp limit=200, grad=1
@@ -179,9 +195,13 @@ func main() {
 	motor.SetXACTUAL(50000*FocuserStatus.scale)
 	motor.SetXTARGET(50000*FocuserStatus.scale)
 
+	motor.SetXTARGET(100*FocuserStatus.scale)
 
-	ch3, _:= pwm3.Channel(25)
+
+	ch3, _:= pwm3.Channel(22)
 	pwm3.Set(ch3, pwm3.Top()/2)
+	ch2, _:= pwm2.Channel(20)
+	pwm2.Set(ch2, pwm2.Top()/3)
 
 	var input_string string
 
@@ -196,12 +216,14 @@ func main() {
 		temp = 0
 
 		FocuserStatus.actual_pos = int(motor.GetXACTUAL().XACTUAL/int32(FocuserStatus.scale))
+		//println("POS>", FocuserStatus.actual_pos)
 
 		display.ClearBuffer()
-	 	tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AstroMeters", color.RGBA{255, 255, 255, 255})
+	 	tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AstroMeters", color.RGBA{100, 100, 100, 100})
 	 	tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 30, "Temp: "+strconv.Itoa(temp) + " C", color.RGBA{255, 255, 255, 255})
 	 	tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 47, "pos: "+strconv.Itoa(FocuserStatus.actual_pos/1000) + "", color.RGBA{255, 255, 255, 255})
 		display.Display() 
+				
 
 		if(ser.Buffered()>0){
 				for(ser.Buffered()>0){
@@ -330,7 +352,7 @@ func main() {
 					}
 				}
 		}
-    //println("TEXT>", "  ADC: ", input0.Get())
+        //println("TEXT>", "  ADC: ", input0.Get())
 
 		time.Sleep(time.Millisecond * 10)
 	}
