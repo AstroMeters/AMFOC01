@@ -1,10 +1,14 @@
+
 {
     "inherits": [
-        "rp2040"
+      "rp2040"
     ],
-    "build-tags": ["amfor01"],
+    "build-tags": ["amfoc01"],
     "serial-port": ["acm:2e8a:000A"],
-    "linkerscript": "targets/pico.ld",
+    "//linkerscript": "targets/pico.ld",
+    "ldflags": [
+        "--defsym=__flash_size=2048K"
+    ],
     "extra-files": [
         "targets/pico-boot-stage2.S"
     ]
