@@ -104,7 +104,7 @@ func init() {
 // USB identifiers
 const (
 	usb_STRING_PRODUCT      = "AMFOC01"
-	usb_STRING_MANUFACTURER = "AstroMeters"
+	usb_STRING_MANUFACTURER = "AstroMeters.eu"
 )
 
 var (

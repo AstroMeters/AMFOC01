@@ -4,7 +4,7 @@ import (
 	//"tinygo.org/x/drivers"
 	"machine"
 	"time"
-  "fmt"
+    "fmt"
 	//"tmc5130"
 	//"tmc5130"
 	"tinygo.org/x/drivers/tmc5130"
@@ -96,11 +96,32 @@ func getRainbowRGB(i uint8) color.RGBA {
 }
 
 
-// func drawDisp(display sh1106) {
-// 	display.ClearDisplay()
-// 	tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AstroMeters", color.RGBA{255, 255, 255, 255})
-//     display.Display() 
+// func init_motor(motor *tmc5130) {
+
+// 	motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE,			0x00000000); //GCONF
+// 	motor.SetRegister(tmc5130.CHOPCONF|tmc5130.WRITE,	0x000101D5); //CHOPCONF: TOFF=5, HSTRT=5, HEND=3, TBL=2, CHM=0 (spreadcycle)
+// 	//motor.SetRegister(0x90,0x00070603); //IHOLD_IRUN: IHOLD=3, IRUN=10 (max.current), IHOLDDELAY=6
+// 	//motor.SetRegister(0x90,(2 &0b11111)<<0|(2 &0b11111)<<8|(1&0b1111)<<16);
+// 	motor.SetCurrent(0,50, 0)
+// 	motor.SetRegister(tmc5130.TPOWERDOWN|tmc5130.WRITE,10)
+// 	motor.SetRegister(tmc5130.PWM_CONF|tmc5130.WRITE,	0x00000000)
+// 	//PWM_CONF: autoscale=1, 2/1024 Fclk, Switch amp limit=200, grad=1
+// 	motor.SetRegister(tmc5130.PWM_CONF|tmc5130.WRITE, 	0x000401C8)
+
+// 	motor.SetRegister(tmc5130.A1|tmc5130.WRITE,				1000)
+// 	motor.SetRegister(tmc5130.V1|tmc5130.WRITE,				100000)
+// 	motor.SetRegister(tmc5130.AMAX|tmc5130.WRITE,			5000)
+// 	motor.SetRegister(tmc5130.VMAX|tmc5130.WRITE,			100000)
+// 	motor.SetRegister(tmc5130.D1|tmc5130.WRITE,				1400)
+// 	motor.SetRegister(tmc5130.VSTOP|tmc5130.WRITE, 		10)
+
+// 	motor.SetRegister(tmc5130.RAMPMODE|tmc5130.WRITE,	0)
+
+// 	motor.SetRegister(tmc5130.XACTUAL|tmc5130.WRITE,		0)
+// 	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,		0)
+// 	//	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,10000);
 // }
+
 
 func main() {
 
@@ -125,8 +146,6 @@ func main() {
 			SDI: SPI_MISO,
 			Mode: 3})
 	machine.SPI0.SetBaudRate(115200*32)
-	//machine.SPI0.SetBaudRate(115200*64)
-
 
 	display := sh1106.NewSPI(machine.SPI0, IPS_DC, IPS_RST, IPS_CS)
 
@@ -148,6 +167,7 @@ func main() {
 
 	motor := tmc5130.New(machine.SPI0, machine.GPIO5)
 	motor.Configure()
+	//init_motor(&motor)
 
 	pwm3.Configure(machine.PWMConfig{ Period: 1e9/4 })
 	pwm2.Configure(machine.PWMConfig{ Period: 1e8/4 })
@@ -168,28 +188,6 @@ func main() {
 	// ds.SkipRom()
 	// ds.ReadScratchpad()
 
-	motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE,			0x00000000); //GCONF
-	motor.SetRegister(tmc5130.CHOPCONF|tmc5130.WRITE,	0x000101D5); //CHOPCONF: TOFF=5, HSTRT=5, HEND=3, TBL=2, CHM=0 (spreadcycle)
-	//motor.SetRegister(0x90,0x00070603); //IHOLD_IRUN: IHOLD=3, IRUN=10 (max.current), IHOLDDELAY=6
-	//motor.SetRegister(0x90,(2 &0b11111)<<0|(2 &0b11111)<<8|(1&0b1111)<<16);
-	motor.SetCurrent(0,50, 0)
-	motor.SetRegister(tmc5130.TPOWERDOWN|tmc5130.WRITE,10)
-	motor.SetRegister(tmc5130.PWM_CONF|tmc5130.WRITE,	0x00000000)
-	//PWM_CONF: autoscale=1, 2/1024 Fclk, Switch amp limit=200, grad=1
-	motor.SetRegister(tmc5130.PWM_CONF|tmc5130.WRITE, 	0x000401C8)
-
-	motor.SetRegister(tmc5130.A1|tmc5130.WRITE,				1000)
-	motor.SetRegister(tmc5130.V1|tmc5130.WRITE,				100000)
-	motor.SetRegister(tmc5130.AMAX|tmc5130.WRITE,			5000)
-	motor.SetRegister(tmc5130.VMAX|tmc5130.WRITE,			100000)
-	motor.SetRegister(tmc5130.D1|tmc5130.WRITE,				1400)
-	motor.SetRegister(tmc5130.VSTOP|tmc5130.WRITE, 		10)
-
-	motor.SetRegister(tmc5130.RAMPMODE|tmc5130.WRITE,	0)
-
-	motor.SetRegister(tmc5130.XACTUAL|tmc5130.WRITE,		0)
-	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,		0)
-	//	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,10000);
 
 
 	motor.SetXACTUAL(50000*FocuserStatus.scale)
