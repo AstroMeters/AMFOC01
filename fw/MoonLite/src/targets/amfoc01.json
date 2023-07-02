@@ -4,12 +4,11 @@
       "rp2040"
     ],
     "build-tags": ["amfoc01"],
-    "serial-port": ["acm:2e8a:000A"],
-    "//linkerscript": "targets/pico.ld",
+    "serial-port": ["2e8a:000a"],
     "ldflags": [
-        "--defsym=__flash_size=2048K"
+        "--defsym=__flash_size=8M"
     ],
     "extra-files": [
-        "targets/pico-boot-stage2.S"
+        "targets/feather-rp2040-boot-stage2.S"
     ]
 }

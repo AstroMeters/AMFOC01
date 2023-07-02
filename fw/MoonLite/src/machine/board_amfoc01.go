@@ -36,6 +36,13 @@ const (
 	GP27 Pin = GPIO27
 	GP28 Pin = GPIO28
 
+	THERMISTOR  Pin = GPIO26
+	EXT_PWR_DET Pin = GPIO1
+
+	BTN_A Pin = GPIO12
+	BTN_B Pin = GPIO13
+	BTN_C Pin = GPIO8
+
 	// Onboard LED
 	LED Pin = GPIO25
 
@@ -104,7 +111,7 @@ func init() {
 // USB identifiers
 const (
 	usb_STRING_PRODUCT      = "AMFOC01"
-	usb_STRING_MANUFACTURER = "AstroMeters"
+	usb_STRING_MANUFACTURER = "AstroMeters.eu"
 )
 
 var (

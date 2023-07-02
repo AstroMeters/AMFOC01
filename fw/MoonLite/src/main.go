@@ -2,33 +2,37 @@ package main
 
 import (
 	//"tinygo.org/x/drivers"
+
 	"fmt"
 	"machine"
 	"time"
 
 	//"tmc5130"
 	//"tmc5130"
-	"image/color"
+	//"image/color"
 
 	"tinygo.org/x/drivers/tmc5130"
 
 	//"tinygo.org/x/drivers/st7789"
-	"tinygo.org/x/drivers/sh1106"
-	//	"tinygo.org/x/drivers/ds18b20"
 	"math/big"
-	"strconv"
+	//"strconv"
 	"strings"
+
+	//"tinygo.org/x/drivers/ds18b20"
+	"tinygo.org/x/drivers/sh1106"
 
 	//
 	// "tinygo.org/x/tinyfont/freeserif"
 	// "tinygo.org/x/tinyfont/gophers"
 
-	"tinygo.org/x/tinyfont"
-	"tinygo.org/x/tinyfont/freesans"
+	// "tinygo.org/x/tinyfont"
+	// "tinygo.org/x/tinyfont/freesans"
 	// "tinygo.org/x/tinyfont/freemono"
 	// "tinygo.org/x/tinyfont/freesans"
 	// "tinygo.org/x/tinyfont/freeserif"
 	// "tinygo.org/x/tinyfont/gophers"
+
+	"github.com/roman-dvorak/user_interface"
 )
 
 const (
@@ -37,9 +41,9 @@ const (
 	BTN_EXT       = machine.GPIO26
 	BTN_EXT_ADC   = machine.ADC0
 
-	IPS_CS  = machine.GPIO9
-	IPS_DC  = machine.GPIO10
-	IPS_RST = machine.GPIO11
+	OLED_CS  = machine.GPIO9
+	OLED_DC  = machine.GPIO10
+	OLED_RST = machine.GPIO11
 	//IPS_BL = machine.GPIO8
 
 	TMC_CS = machine.GPIO5
@@ -47,15 +51,6 @@ const (
 	SPI_CLK  = machine.GPIO6
 	SPI_MOSI = machine.GPIO7
 	SPI_MISO = machine.GPIO4
-)
-
-var (
-	white = color.RGBA{255, 255, 255, 255}
-	red   = color.RGBA{255, 0, 0, 255}
-	blue  = color.RGBA{0, 0, 255, 255}
-	green = color.RGBA{0, 255, 0, 255}
-	black = color.RGBA{0, 0, 0, 255}
-	aaa   = color.RGBA{70, 70, 70, 255}
 )
 
 type focuser_status struct {
@@ -86,83 +81,13 @@ func int_external_button(p machine.Pin) {
 
 }
 
-func getRainbowRGB(i uint8) color.RGBA {
-	if i < 85 {
-		return color.RGBA{i * 3, 255 - i*3, 0, 255}
-	} else if i < 170 {
-		i -= 85
-		return color.RGBA{255 - i*3, 0, i * 3, 255}
-	}
-	i -= 170
-	return color.RGBA{0, i * 3, 255 - i*3, 255}
-}
+func init_motor(motor *tmc5130.Device, display sh1106.Device) {
 
-// func drawDisp(display sh1106) {
-// 	display.ClearDisplay()
-// 	tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AstroMeters", color.RGBA{255, 255, 255, 255})
-//     display.Display()
-// }
-
-func main() {
-
-	time.Sleep(time.Millisecond * 1000)
-	ser := machine.Serial
-
-	var FocuserStatus focuser_status
-	FocuserStatus.scale = 1
-
-	machine.InitADC()
-	//input0 := machine.ADC{machine.ADC0}
-	BTN_EXT.Configure(machine.PinConfig{Mode: machine.PinOutput})
-	BTN_EXT.SetInterrupt(machine.PinRising, int_external_button)
-
-	pwm3 := machine.PWM3
-	pwm2 := machine.PWM2
-
-	machine.SPI0.Configure(machine.SPIConfig{
-		SCK:  SPI_CLK,
-		SDO:  SPI_MOSI,
-		SDI:  SPI_MISO,
-		Mode: 3})
-	machine.SPI0.SetBaudRate(115200 * 32)
-	//machine.SPI0.SetBaudRate(115200*64)
-
-	display := sh1106.NewSPI(machine.SPI0, IPS_DC, IPS_RST, IPS_CS)
-
-	display.Configure(sh1106.Config{
-		Width:  128,
-		Height: 64,
-	})
-
-	IPS_CS.Configure(machine.PinConfig{Mode: machine.PinOutput})
-	display.ClearBuffer()
-	display.Display()
-	//drawDisp(&display)
-
-	mot_en := machine.GPIO3
-	mot_en.Configure(machine.PinConfig{Mode: machine.PinOutput})
-	mot_en.Low()
-
-	motor := tmc5130.New(machine.SPI0, machine.GPIO5)
-	motor.Configure()
-
-	pwm3.Configure(machine.PWMConfig{Period: 1e9 / 4})
-	pwm2.Configure(machine.PWMConfig{Period: 1e8 / 4})
-
-	// motor.SetXACTUAL(50000*FocuserStatus.scale)
-	// motor.SetXTARGET(10000*FocuserStatus.scale)
-	// for {
-	// 	println("POS>", motor.GetXACTUAL().XACTUAL)
-	// }
-
-	// ds := ds18b20.New(machine.ADC2)
-	// ds.Reset()
-	// ds.SkipRom()
-	// ds.ConvertT()
-
-	// ds.Reset()
-	// ds.SkipRom()
-	// ds.ReadScratchpad()
+	// display.ClearBuffer()
+	// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AMFOC01", color.RGBA{100, 100, 100, 100})
+	// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 30, "PWR UP", color.RGBA{255, 255, 255, 255})
+	// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 47, "Initializing motor", color.RGBA{255, 255, 255, 255})
+	// display.Display()
 
 	motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE, 0x00000000)    //GCONF
 	motor.SetRegister(tmc5130.CHOPCONF|tmc5130.WRITE, 0x000101D5) //CHOPCONF: TOFF=5, HSTRT=5, HEND=3, TBL=2, CHM=0 (spreadcycle)
@@ -186,11 +111,78 @@ func main() {
 	motor.SetRegister(tmc5130.XACTUAL|tmc5130.WRITE, 0)
 	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE, 0)
 	//	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,10000);
+}
 
-	motor.SetXACTUAL(50000 * FocuserStatus.scale)
-	motor.SetXTARGET(50000 * FocuserStatus.scale)
+func main() {
 
-	motor.SetXTARGET(100 * FocuserStatus.scale)
+	machine.SPI0.Configure(machine.SPIConfig{
+		SCK:  SPI_CLK,
+		SDO:  SPI_MOSI,
+		SDI:  SPI_MISO,
+		Mode: 3})
+	machine.SPI0.SetBaudRate(115200 * 32)
+	//machine.SPI0.SetBaudRate(115200*64)
+
+	display := sh1106.NewSPI(machine.SPI0, OLED_DC, OLED_RST, OLED_CS)
+
+	display.Configure(sh1106.Config{
+		Width:  128,
+		Height: 64,
+	})
+
+	OLED_CS.Configure(machine.PinConfig{Mode: machine.PinOutput})
+
+	//drawDisp(&display)
+
+	ui := user_interface.New(display)
+	ui.Configure()
+	//ui.DrawSplashScreen()
+
+	time.Sleep(2000 * time.Millisecond)
+
+	ser := machine.Serial
+
+	var FocuserStatus focuser_status
+	FocuserStatus.scale = 1
+
+	machine.InitADC()
+	//thermistor := machine.ADC{machine.THERMISTOR}
+
+	ext_pwr_det := machine.EXT_PWR_DET
+	ext_pwr_det.Configure(machine.PinConfig{Mode: machine.PinInput})
+
+	pin_btn_a := machine.BTN_A
+	pin_btn_a.Configure(machine.PinConfig{Mode: machine.PinInput})
+	pin_btn_a.SetInterrupt(machine.PinRising, func(p machine.Pin) {
+		ui.Btn_down()
+	})
+	pin_btn_b := machine.BTN_B
+	pin_btn_b.Configure(machine.PinConfig{Mode: machine.PinInput})
+	pin_btn_b.SetInterrupt(machine.PinRising, func(p machine.Pin) {
+		ui.Btn_up()
+	})
+	pin_btn_c := machine.BTN_C
+	pin_btn_c.Configure(machine.PinConfig{Mode: machine.PinInput})
+	pin_btn_c.SetInterrupt(machine.PinRising, func(p machine.Pin) {
+		ui.Btn_set()
+	})
+
+	BTN_EXT.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	BTN_EXT.SetInterrupt(machine.PinRising, int_external_button)
+
+	pwm3 := machine.PWM3
+	pwm2 := machine.PWM2
+
+	mot_en := machine.GPIO3
+	mot_en.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	mot_en.Low()
+
+	motor := tmc5130.New(machine.SPI0, machine.GPIO5)
+	motor.Configure()
+	init_motor(motor, display)
+
+	pwm3.Configure(machine.PWMConfig{Period: 10})
+	pwm2.Configure(machine.PWMConfig{Period: 9})
 
 	ch3, _ := pwm3.Channel(22)
 	pwm3.Set(ch3, pwm3.Top()/2)
@@ -201,21 +193,73 @@ func main() {
 
 	var temp int
 
+	var last_ext_pwr bool
+	last_ext_pwr = false
+
+	ui.PrepareScreen()
+	time.Sleep(time.Second * 3)
+
+	// ow := onewire.New(machine.ADC1)
+	// romIDs, err := ow.Search(onewire.SEARCH_ROM_COMMAND)
+	// if err != nil {
+	// 	println(err)
+	// }
+	// ds := ds18b20.New(ow)
+
+	// for {
+	// 	time.Sleep(3 * time.Second)
+
+	// 	println()
+	// 	println("Device:", machine.Device)
+
+	// 	println()
+	// 	println("Request Temperature.")
+	// 	for _, romid := range romIDs {
+	// 		println("Sensor RomID: ", hex.EncodeToString(romid))
+	// 		ds.RequestTemperature(romid)
+	// 	}
+
+	// 	// wait 750ms or more for DS18B20 convert T
+	// 	time.Sleep(1 * time.Second)
+
+	// 	println()
+	// 	println("Read Temperature")
+	// 	for _, romid := range romIDs {
+	// 		raw, err := ds.ReadTemperatureRaw(romid)
+	// 		if err != nil {
+	// 			println(err)
+	// 		}
+	// 		println()
+	// 		println("Sensor RomID: ", hex.EncodeToString(romid))
+	// 		println("Temperature Raw value: ", hex.EncodeToString(raw))
+
+	// 		t, err := ds.ReadTemperature(romid)
+	// 		if err != nil {
+	// 			println(err)
+	// 		}
+	// 		println("Temperature in celsius milli degrees (°C/1000): ", t)
+	// 	}
+	// }
+
+	ui.SetScreen(user_interface.Home)
+
 	for {
 
-		//ds.Reset()
-		//ds.SkipRom()
-		//temp = ds.ReadScratchpad()
-		temp = 0
+		if last_ext_pwr != ext_pwr_det.Get() && ext_pwr_det.Get() {
+			init_motor(motor, display)
+			last_ext_pwr = ext_pwr_det.Get()
+		}
 
 		FocuserStatus.actual_pos = int(motor.GetXACTUAL().XACTUAL / int32(FocuserStatus.scale))
 		//println("POS>", FocuserStatus.actual_pos)
 
-		display.ClearBuffer()
-		tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AstroMeters", color.RGBA{100, 100, 100, 100})
-		tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 30, "Temp: "+strconv.Itoa(temp)+" C", color.RGBA{255, 255, 255, 255})
-		tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 47, "pos: "+strconv.Itoa(FocuserStatus.actual_pos/1000)+"", color.RGBA{255, 255, 255, 255})
-		display.Display()
+		// display.ClearBuffer()
+		// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AstroMeters", color.RGBA{100, 100, 100, 100})
+		// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 30, "Temp: "+strconv.Itoa(temp)+" C", color.RGBA{255, 255, 255, 255})
+		// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 47, "pos: "+strconv.Itoa(FocuserStatus.actual_pos/1000)+"", color.RGBA{255, 255, 255, 255})
+		// display.Display()
+		ui.SetData(float64(temp), -100, FocuserStatus.actual_pos, ext_pwr_det.Get())
+		//ui.Action()
 
 		if ser.Buffered() > 0 {
 			for ser.Buffered() > 0 {
@@ -341,12 +385,13 @@ func main() {
 					//println("TempOffset", num)
 
 				default:
-					println("NEZNAMY PRIKAZ...")
+					println("Unknown command...", input_string)
 
 				}
 			}
 		}
 		//println("TEXT>", "  ADC: ", input0.Get())
+		//println(pin_btn_a.Get(), pin_btn_b.Get(), pin_btn_c.Get())
 
 		time.Sleep(time.Millisecond * 10)
 	}
