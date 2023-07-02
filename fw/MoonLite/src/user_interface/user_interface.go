@@ -18,9 +18,9 @@ import (
 ///////
 
 type DataObject struct {
-	Cursor    int
 	MaxCursor int
 	Name      string
+	Type      int
 	Action    func(cursor int)
 	Draw      func()
 	// Další atributy datové struktury
@@ -42,7 +42,7 @@ type Tree struct {
 
 var Cursor int
 
-func (t *Tree) Insert(parent *Node, data *DataObject) {
+func (t *Tree) Insert(parent *Node, data *DataObject) *Node {
 	newNode := &Node{Data: data, Parent: parent}
 
 	if parent == nil {
@@ -63,7 +63,7 @@ func (t *Tree) Insert(parent *Node, data *DataObject) {
 		parent.Children[0].Previous = newNode
 	}
 
-	data.Cursor = 1
+	return newNode
 }
 
 func (t *Tree) IncreaseCursor() {
@@ -100,29 +100,24 @@ func (t *Tree) ProcessCursor() {
 			t.CurrentNode = t.CurrentNode.Next
 			t.Cursor = 1
 		}
+	case 2:
+		// Vyber pod prvek
+		if t.CurrentNode.Children != nil {
+			t.CurrentNode = t.CurrentNode.Children[0]
+			t.Cursor = 1
+		}
 	default:
 		// Specifická akce pro hodnotu kurzoru
-		if t.CurrentNode != nil {
-			t.CurrentNode.Data.Action(t.Cursor - 2)
-		}
+
+		// if t.CurrentNode.Data.Draw != nil {
+		// 	t.CurrentNode.Data.Draw()
+		// }
 	}
 }
 
 func (t *Tree) SetDefaultPosition(node *Node) {
 	t.CurrentNode = node
 	t.Cursor = 1
-}
-
-func (t *Tree) findNodeByCursor(nodes []*Node, cursor int) *Node {
-	for _, node := range nodes {
-		if node.Data.Cursor == cursor {
-			return node
-		}
-		if foundNode := t.findNodeByCursor(node.Children, cursor); foundNode != nil {
-			return foundNode
-		}
-	}
-	return nil
 }
 
 func (t *Tree) GetNodeInfo() string {
@@ -164,10 +159,17 @@ const (
 	SetupRange
 )
 
+const (
+	NODE_TREE   = iota // Rozcestnik
+	NODE_ACTION        // Akce vykonavana strankou
+)
+
 type Device struct {
 	display sh1106.Device
 	state   int
 	tree    Tree
+
+	currentPage int
 
 	temperature_in  float64
 	temperature_out float64
@@ -178,48 +180,85 @@ type Device struct {
 
 func New(display sh1106.Device) *Device {
 	d := &Device{
-		display: display,
-		state:   Init,
+		display:        display,
+		state:          Init,
+		currentPage:    Home,
+		motor_position: 0,
 	}
 
 	root_1 := &DataObject{
-		Cursor:    1,
-		MaxCursor: 2,
+		MaxCursor: 1,
 		Name:      "Init",
 		Action:    nil,
+		Type:      NODE_TREE,
 	}
 
 	d.tree.Insert(nil, root_1)
 	d.tree.Cursor = 1
 
 	main_1 := &DataObject{
-		Cursor:    1,
-		MaxCursor: 2,
+		MaxCursor: 3,
 		Name:      "Home page",
-		Action: func(cursor int) {
-		},
-		Draw: func() {
-			d.DrawHomeScreen()
-		},
+		Type:      NODE_TREE,
 	}
 
 	main_2 := &DataObject{
-		Cursor:    1,
 		MaxCursor: 3,
-		Name:      "Ocular page",
-		Action:    nil,
+		Name:      "Manual ctrl",
+		Type:      NODE_TREE,
 	}
 
 	main_3 := &DataObject{
-		Cursor:    1,
+		MaxCursor: 3,
+		Name:      "Ocular page",
+		Action:    nil,
+		Type:      NODE_TREE,
+	}
+
+	main_4 := &DataObject{
 		MaxCursor: 3,
 		Name:      "Nastavení page",
 		Action:    nil,
+		Type:      NODE_TREE,
 	}
 
-	d.tree.Insert(d.tree.Roots[0], main_1)
+	node_home := d.tree.Insert(d.tree.Roots[0], main_1)
 	d.tree.Insert(d.tree.Roots[0], main_2)
 	d.tree.Insert(d.tree.Roots[0], main_3)
+	d.tree.Insert(d.tree.Roots[0], main_4)
+
+	home_view := &DataObject{
+		MaxCursor: 3,
+		Name:      "Home view",
+		Draw:      d.DrawHomeScreen,
+		Type:      NODE_ACTION,
+	}
+
+	home_status := &DataObject{
+		MaxCursor: 3,
+		Name:      "Motor status",
+		Draw:      d.DrawHomeScreen,
+		Type:      NODE_ACTION,
+	}
+
+	d.tree.Insert(node_home, home_view)
+	d.tree.Insert(node_home, home_status)
+
+	ocular_list := &DataObject{
+		MaxCursor: 3,
+		Name:      "Ocular list",
+		Type:      NODE_TREE,
+		Draw:      d.DrawHomeScreen,
+	}
+
+	ocular_select := &DataObject{
+		MaxCursor: 3,
+		Name:      "Select Ocular",
+		Type:      NODE_TREE,
+	}
+
+	d.tree.Insert(d.tree.Roots[0].Children[1], ocular_list)
+	d.tree.Insert(d.tree.Roots[0].Children[1], ocular_select)
 
 	d.tree.SetDefaultPosition(d.tree.Roots[0].Children[0])
 
@@ -236,45 +275,55 @@ func (d *Device) SetData(temp_in float64, temp_out float64, pos int, ext_pwr boo
 	d.ext_pwr = ext_pwr
 }
 
+func (d *Device) GetDevice() *Device {
+	return d
+}
+
 func (d *Device) SetScreen(page int) {
 	d.state = page
 	d.Action()
 }
 
 func (d *Device) Btn_set() {
-	// println(d.tree.GetNodeInfo())
-	d.tree.ProcessCursor()
-	// println(d.tree.GetNodeInfo())
+	if len(d.tree.CurrentNode.Children) > 0 {
+		d.tree.CurrentNode = d.tree.CurrentNode.Children[0]
+	}
+	//d.DrawMenuInfo()
+	d.Process()
 
-	if d.tree.Cursor < 2 {
-		d.DrawMenuInfo()
-	} else {
-		d.tree.CurrentNode.Data.Draw()
+}
+
+func (d *Device) Btn_back() {
+	if d.tree.CurrentNode.Parent != nil {
+		d.tree.CurrentNode = d.tree.CurrentNode.Parent
 	}
 
+	d.Process()
 }
 
 func (d *Device) Btn_up() {
-	// println(d.tree.GetNodeInfo())
-	d.tree.IncreaseCursor()
-	// //d.tree.ProcessCursor()
-	// println(d.tree.GetNodeInfo())
 
-	if d.tree.Cursor < 2 {
-		d.DrawMenuInfo()
-	}
+	d.tree.CurrentNode = d.tree.CurrentNode.Next
+	//d.DrawMenuInfo()
+	d.Process()
+
 }
 
 func (d *Device) Btn_down() {
-	// println(d.tree.GetNodeInfo())
-	d.tree.DecreaseCursor()
-	// //d.tree.ProcessCursor()
-	// println(d.tree.GetNodeInfo())
 
-	if d.tree.Cursor < 2 {
+	d.tree.CurrentNode = d.tree.CurrentNode.Previous
+	//d.DrawMenuInfo()
+	d.Process()
+
+}
+
+func (d *Device) Process() {
+	if d.tree.CurrentNode.Data.Draw == nil {
 		d.DrawMenuInfo()
+	} else {
+		//d.tree.CurrentNode.Data.Draw()
+		d.DrawHomeScreen()
 	}
-
 }
 
 func (d *Device) Configure() {
@@ -310,10 +359,10 @@ func (d *Device) DrawSplashScreen() {
 
 func (d *Device) DrawHomeScreen() {
 	d.Clear()
-	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 13, "AMFOC01", color.RGBA{100, 100, 100, 100})
-	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 30, "Temp: "+strconv.Itoa(int(d.temperature_in))+" C", color.RGBA{255, 255, 255, 255})
-	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 47, "pos: "+strconv.Itoa(d.motor_position)+"", color.RGBA{255, 255, 255, 255})
-	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 63, "12V: "+BoolToString(d.ext_pwr)+"", color.RGBA{255, 255, 255, 255})
+	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 13, "HS", color.RGBA{100, 100, 100, 100})
+	//tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 30, "Temp: "+strconv.Itoa(int(d.temperature_in))+" C", color.RGBA{255, 255, 255, 255})
+	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 47, "pos: "+strconv.Itoa(d.GetDevice().motor_position)+"", color.RGBA{255, 255, 255, 255})
+	//tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 63, BoolToString(d.GetDevice().ext_pwr), color.RGBA{255, 255, 255, 255})
 
 	d.Display()
 }

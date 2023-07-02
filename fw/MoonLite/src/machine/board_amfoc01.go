@@ -42,6 +42,7 @@ const (
 	BTN_A Pin = GPIO12
 	BTN_B Pin = GPIO13
 	BTN_C Pin = GPIO8
+	BTN_D Pin = GPIO29
 
 	// Onboard LED
 	LED Pin = GPIO25

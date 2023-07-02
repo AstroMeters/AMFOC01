@@ -5,6 +5,7 @@ import (
 
 	"fmt"
 	"machine"
+	"math"
 	"time"
 
 	//"tmc5130"
@@ -16,6 +17,7 @@ import (
 	//"tinygo.org/x/drivers/st7789"
 	"math/big"
 	//"strconv"
+	//"reflect"
 	"strings"
 
 	//"tinygo.org/x/drivers/ds18b20"
@@ -51,6 +53,8 @@ const (
 	SPI_CLK  = machine.GPIO6
 	SPI_MOSI = machine.GPIO7
 	SPI_MISO = machine.GPIO4
+
+	MOTOR_EN = machine.GPIO3
 )
 
 type focuser_status struct {
@@ -81,19 +85,32 @@ func int_external_button(p machine.Pin) {
 
 }
 
+const (
+	R0 = 100000 // Odpor termistoru při referenční teplotě
+	RS = 100000.0
+	A  = 0.004354016 // Kalibrační koeficient A
+	B  = 0.000256985 // Kalibrační koeficient B
+	C  = 0.000002620 // Kalibrační koeficient C
+)
+
+func CalculateTemperature(adcValue uint16) float64 {
+	voltage := float64(adcValue) * (3.3 / 65535.0) // Převod ADC na napětí (předpokládá se 3.3V referenční napětí)
+	r := (voltage * 100000) / (3.3 - voltage)
+	//println(voltage, r)
+
+	invT := A + B*math.Log(r) + C*math.Pow(math.Log(r), 3) // Přepočet na inverzní teplotu podle Steinhart-Hartovy rovnice
+	temp := 1 / invT                                       // Inverze inverzní teploty pro získání teploty v kelvinech
+
+	return temp //- 273.15
+}
+
 func init_motor(motor *tmc5130.Device, display sh1106.Device) {
 
-	// display.ClearBuffer()
-	// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AMFOC01", color.RGBA{100, 100, 100, 100})
-	// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 30, "PWR UP", color.RGBA{255, 255, 255, 255})
-	// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 47, "Initializing motor", color.RGBA{255, 255, 255, 255})
-	// display.Display()
-
-	motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE, 0x00000000)    //GCONF
+	motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE, 0x0000)        //GCONF
 	motor.SetRegister(tmc5130.CHOPCONF|tmc5130.WRITE, 0x000101D5) //CHOPCONF: TOFF=5, HSTRT=5, HEND=3, TBL=2, CHM=0 (spreadcycle)
 	//motor.SetRegister(0x90,0x00070603); //IHOLD_IRUN: IHOLD=3, IRUN=10 (max.current), IHOLDDELAY=6
 	//motor.SetRegister(0x90,(2 &0b11111)<<0|(2 &0b11111)<<8|(1&0b1111)<<16);
-	motor.SetCurrent(0, 50, 0)
+	motor.SetCurrent(0, 100, 10)
 	motor.SetRegister(tmc5130.TPOWERDOWN|tmc5130.WRITE, 10)
 	motor.SetRegister(tmc5130.PWM_CONF|tmc5130.WRITE, 0x00000000)
 	//PWM_CONF: autoscale=1, 2/1024 Fclk, Switch amp limit=200, grad=1
@@ -111,6 +128,7 @@ func init_motor(motor *tmc5130.Device, display sh1106.Device) {
 	motor.SetRegister(tmc5130.XACTUAL|tmc5130.WRITE, 0)
 	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE, 0)
 	//	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,10000);
+
 }
 
 func main() {
@@ -121,7 +139,6 @@ func main() {
 		SDI:  SPI_MISO,
 		Mode: 3})
 	machine.SPI0.SetBaudRate(115200 * 32)
-	//machine.SPI0.SetBaudRate(115200*64)
 
 	display := sh1106.NewSPI(machine.SPI0, OLED_DC, OLED_RST, OLED_CS)
 
@@ -132,13 +149,8 @@ func main() {
 
 	OLED_CS.Configure(machine.PinConfig{Mode: machine.PinOutput})
 
-	//drawDisp(&display)
-
 	ui := user_interface.New(display)
 	ui.Configure()
-	//ui.DrawSplashScreen()
-
-	time.Sleep(2000 * time.Millisecond)
 
 	ser := machine.Serial
 
@@ -146,10 +158,13 @@ func main() {
 	FocuserStatus.scale = 1
 
 	machine.InitADC()
-	//thermistor := machine.ADC{machine.THERMISTOR}
 
-	ext_pwr_det := machine.EXT_PWR_DET
+	ext_pwr_det := machine.GPIO1
 	ext_pwr_det.Configure(machine.PinConfig{Mode: machine.PinInput})
+
+	pin_temp_internal := TEMP_INTERNAL
+	pin_temp_internal.Configure(machine.PinConfig{Mode: machine.PinAnalog})
+	//analog_value := machine.ADC{TEMP_INTERNAL}.Get()
 
 	pin_btn_a := machine.BTN_A
 	pin_btn_a.Configure(machine.PinConfig{Mode: machine.PinInput})
@@ -167,13 +182,18 @@ func main() {
 		ui.Btn_set()
 	})
 
+	pin_btn_d := machine.GPIO29
+	pin_btn_d.Configure(machine.PinConfig{Mode: machine.PinInputPullup})
+	pin_btn_d.SetInterrupt(machine.PinFalling, func(p machine.Pin) {
+		ui.Btn_back()
+	})
+
 	BTN_EXT.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	BTN_EXT.SetInterrupt(machine.PinRising, int_external_button)
 
-	pwm3 := machine.PWM3
-	pwm2 := machine.PWM2
+	//pwm3 := machine.PWM3
 
-	mot_en := machine.GPIO3
+	mot_en := MOTOR_EN
 	mot_en.Configure(machine.PinConfig{Mode: machine.PinOutput})
 	mot_en.Low()
 
@@ -181,67 +201,32 @@ func main() {
 	motor.Configure()
 	init_motor(motor, display)
 
-	pwm3.Configure(machine.PWMConfig{Period: 10})
-	pwm2.Configure(machine.PWMConfig{Period: 9})
+	//pwm3.Configure(machine.PWMConfig{Period: 10})
+	pin_led_bottom := machine.GPIO20
+	pin_led_bottom.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	pin_led_bottom.High()
 
-	ch3, _ := pwm3.Channel(22)
-	pwm3.Set(ch3, pwm3.Top()/2)
-	ch2, _ := pwm2.Channel(20)
-	pwm2.Set(ch2, pwm2.Top()/3)
+	pin_led_top := machine.GPIO22
+	//pin_led_top.Configure(machine.PinConfig{Mode: machine.PinPWM})
+	pwm2 := machine.PWM3
+	pwm2.Configure(machine.PWMConfig{Period: 1e9 / 100})
+
+	ch2, _ := pwm2.Channel(pin_led_top)
+	var blink_percent uint32
+	blink_percent = 0
+	pwm2.Set(ch2, pwm2.Top())
 
 	var input_string string
 
-	var temp int
+	var temp float64
 
 	var last_ext_pwr bool
 	last_ext_pwr = false
 
 	ui.PrepareScreen()
-	time.Sleep(time.Second * 3)
+	time.Sleep(time.Second * 1)
 
-	// ow := onewire.New(machine.ADC1)
-	// romIDs, err := ow.Search(onewire.SEARCH_ROM_COMMAND)
-	// if err != nil {
-	// 	println(err)
-	// }
-	// ds := ds18b20.New(ow)
-
-	// for {
-	// 	time.Sleep(3 * time.Second)
-
-	// 	println()
-	// 	println("Device:", machine.Device)
-
-	// 	println()
-	// 	println("Request Temperature.")
-	// 	for _, romid := range romIDs {
-	// 		println("Sensor RomID: ", hex.EncodeToString(romid))
-	// 		ds.RequestTemperature(romid)
-	// 	}
-
-	// 	// wait 750ms or more for DS18B20 convert T
-	// 	time.Sleep(1 * time.Second)
-
-	// 	println()
-	// 	println("Read Temperature")
-	// 	for _, romid := range romIDs {
-	// 		raw, err := ds.ReadTemperatureRaw(romid)
-	// 		if err != nil {
-	// 			println(err)
-	// 		}
-	// 		println()
-	// 		println("Sensor RomID: ", hex.EncodeToString(romid))
-	// 		println("Temperature Raw value: ", hex.EncodeToString(raw))
-
-	// 		t, err := ds.ReadTemperature(romid)
-	// 		if err != nil {
-	// 			println(err)
-	// 		}
-	// 		println("Temperature in celsius milli degrees (°C/1000): ", t)
-	// 	}
-	// }
-
-	ui.SetScreen(user_interface.Home)
+	ui.SetScreen(0)
 
 	for {
 
@@ -251,6 +236,7 @@ func main() {
 		}
 
 		FocuserStatus.actual_pos = int(motor.GetXACTUAL().XACTUAL / int32(FocuserStatus.scale))
+		temp = CalculateTemperature(machine.ADC{TEMP_INTERNAL}.Get())
 		//println("POS>", FocuserStatus.actual_pos)
 
 		// display.ClearBuffer()
@@ -285,6 +271,13 @@ func main() {
 
 				case "FQ":
 					motor.SetXTARGET(int(motor.GetXACTUAL().XACTUAL))
+					//mot_en.High()
+					//motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE, 0x8000)
+					//time.Sleep(10 * time.Millisecond)
+					//motor.SetXTARGET(int(motor.GetXACTUAL().XACTUAL))
+					//time.Sleep(10 * time.Millisecond)
+					//motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE, 0x0000)
+					//mot_en.Low()
 					//STOP ALL MOTION
 
 				case "GC":
@@ -391,8 +384,19 @@ func main() {
 			}
 		}
 		//println("TEXT>", "  ADC: ", input0.Get())
-		//println(pin_btn_a.Get(), pin_btn_b.Get(), pin_btn_c.Get())
+		println(pin_btn_a.Get(), pin_btn_b.Get(), pin_btn_c.Get(), pin_btn_d.Get())
+		println(blink_percent, pwm2.Top())
+		//println(machine.ADC{TEMP_INTERNAL}.Get())
+		//println(fmt.Sprintf("%v", CalculateTemperature(machine.ADC{TEMP_INTERNAL}.Get())))
 
 		time.Sleep(time.Millisecond * 10)
+
+		pwm2.Set(ch2, blink_percent)
+		blink_percent += 500
+		if blink_percent > 62300/2 {
+			blink_percent = 0
+		}
+
+		ui.Process()
 	}
 }
