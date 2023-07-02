@@ -7,6 +7,11 @@ github_repo: AMFOC01
 github_url: https://github.com/AstroMeters/AMFOC01
 homepage: false
 images:
+- fw/MoonLite/src/tinygo.org/x/drivers/examples/ili9341/slideshow/slideshow.jpg
+- fw/MoonLite/src/tinygo.org/x/tinyfont/examples/unicode_font2/unicode_font2.jpg
+- fw/MoonLite/src/tinygo.org/x/tinyfont/examples/unicode_font/unicode_font.jpg
+- fw/MoonLite/src/tinygo.org/x/tinyfont/images/tinyfont.png
+- fw/MoonLite/src/tinygo.org/x/tinyfont/images/rubikmoonrocks.png
 - doc/gen/img/AMFOC01-top.png
 - doc/gen/img/AMFOC01-bottom.png
 - doc/gen/AMFOC01-schematic.svg
