@@ -1,0 +1,14 @@
+
+{
+    "inherits": [
+      "rp2040"
+    ],
+    "build-tags": ["amfoc01"],
+    "serial-port": ["2e8a:000a"],
+    "ldflags": [
+        "--defsym=__flash_size=8M"
+    ],
+    "extra-files": [
+        "targets/feather-rp2040-boot-stage2.S"
+    ]
+}
