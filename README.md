@@ -13,7 +13,7 @@ The device is equipped with an OLED display and four buttons for easy user inter
 - **Easy operation and compatibility:** AMFOC01 is equipped with a red OLED display and four buttons for intuitive control. It can be connected to a computer via USB-C and controlled using software compatible with the [MoonLight](https://indilib.org/devices/focusers/moonlite-focuser.html) protocol. However, the motor cannot be powered via USB-C.
 - **Temperature measurement:** The focuser includes an integrated thermometer for monitoring ambient temperature, which is useful for compensating for temperature influences on focusing.
 
-**Ways of Use**
+## Ways of Use
 
 AMFOC01 can be utilized in several different scenarios:
 
