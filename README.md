@@ -2,7 +2,7 @@
 
 AMFOC01 is a highly sophisticated focuser primarily designed for astronomical telescopes, although it can also be applied to other optical devices. It uses state-of-the-art technologies, such as the micro-stepping driver [TMC5130](https://www.trinamic.com/products/integrated-circuits/details/tmc5130/) for stepper motors and the [RP2040](https://www.raspberrypi.org/products/rp2040/) processor. These components ensure smooth and quiet operation without the unpleasant vibrations that are common with traditional stepper motors.
 
-The device is equipped with an OLED display and four buttons for easy user interaction. It can be connected to a computer via USB-C and controlled using software compatible with the [MoonLight](https://sourceforge.net/p/indi/code/HEAD/tree/trunk/3rdparty/indi-moonlitefocuser/) protocol, such as [KStars](https://edu.kde.org/kstars/) or [INDI](https://www.indilib.org/).
+The device is equipped with an OLED display and four buttons for easy user interaction. It can be connected to a computer via USB-C and controlled using software compatible with the MoonLight protocol, such as [KStars](https://edu.kde.org/kstars/) or [INDI](https://www.indilib.org/).
 
 ![](/doc/gen/img/AMFOC01-bottom.svg) ![](/doc/gen/img/AMFOC01-top.svg)
 
@@ -10,7 +10,7 @@ The device is equipped with an OLED display and four buttons for easy user inter
 
 - **High precision and smooth operation:** Thanks to the use of the micro-stepping driver [TMC5130](https://www.trinamic.com/products/integrated-circuits/details/tmc5130/) and the [RP2040](https://www.raspberrypi.org/products/rp2040/) processor, the focuser provides smooth and quiet operation without vibrations, ensuring high focusing accuracy.
 - **Power flexibility:** The focuser can be powered in the voltage range of 9-16V, making it compatible with lead-acid batteries (e.g., car batteries) or car onboard voltage. Powering is realized through a coaxial DC connector 5.5/2.1.
-- **Easy operation and compatibility:** AMFOC01 is equipped with a red OLED display and four buttons for intuitive control. It can be connected to a computer via USB-C and controlled using software compatible with the [MoonLight](https://sourceforge.net/p/indi/code/HEAD/tree/trunk/3rdparty/indi-moonlitefocuser/) protocol. However, the motor cannot be powered via USB-C.
+- **Easy operation and compatibility:** AMFOC01 is equipped with a red OLED display and four buttons for intuitive control. It can be connected to a computer via USB-C and controlled using software compatible with the [MoonLight](https://indilib.org/devices/focusers/moonlite-focuser.html) protocol. However, the motor cannot be powered via USB-C.
 - **Temperature measurement:** The focuser includes an integrated thermometer for monitoring ambient temperature, which is useful for compensating for temperature influences on focusing.
 
 ## Installation and Connection to the Telescope
@@ -41,7 +41,7 @@ AMFOC01 is equipped with a stepper motor, which is controlled by the [TMC5130](h
 
 The driver is powered by a voltage of 9-16V. A coaxial DC connector 5.5/2.1 is used for power, which can be connected, for example, to a lead-acid battery (car battery). It's important to note that the motor cannot be powered via USB-C.
 
-The device is operated using four buttons and an OLED display, which displays the current position of the focuser, the temperature, and the power status. It can be connected to a computer via USB-C and controlled using software compatible with the [MoonLight](https://sourceforge.net/p/indi/code/HEAD/tree/trunk/3rdparty/indi-moonlitefocuser/) protocol.
+The device is operated using four buttons and an OLED display, which displays the current position of the focuser, the temperature, and the power status. It can be connected to a computer via USB-C and controlled using software compatible with the [MoonLight](https://indilib.org/devices/focusers/moonlite-focuser.html) protocol.
 
 The firmware is written in [TinyGo](https://tinygo.org/), which is a compiler and runtime that allows writing applications for small systems in the Go language. The firmware is open-source and can be found [here](/fw/).
 
