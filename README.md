@@ -1,4 +1,4 @@
-# AMFOC01: Revolutionary Open-Source Focuser for Astronomical Telescopes
+# AMFOC01: High quality Focuser for Astronomical Telescopes
 
 AMFOC01 is a highly sophisticated focuser primarily designed for astronomical telescopes, although it can also be applied to other optical devices. It uses state-of-the-art technologies, such as the micro-stepping driver [TMC5130](https://www.trinamic.com/products/integrated-circuits/details/tmc5130/) for stepper motors and the [RP2040](https://www.raspberrypi.org/products/rp2040/) processor. These components ensure smooth and quiet operation without the unpleasant vibrations that are common with traditional stepper motors.
 
