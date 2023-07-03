@@ -13,13 +13,26 @@ The device is equipped with an OLED display and four buttons for easy user inter
 - **Easy operation and compatibility:** AMFOC01 is equipped with a red OLED display and four buttons for intuitive control. It can be connected to a computer via USB-C and controlled using software compatible with the [MoonLight](https://indilib.org/devices/focusers/moonlite-focuser.html) protocol. However, the motor cannot be powered via USB-C.
 - **Temperature measurement:** The focuser includes an integrated thermometer for monitoring ambient temperature, which is useful for compensating for temperature influences on focusing.
 
+**Ways of Use**
+
+AMFOC01 can be utilized in several different scenarios:
+
+- **For long-term astrophotography:** AMFOC01 allows very precise focus control, which is essential for long-term astrophotography. This is particularly useful when photographing deep space, where it is necessary to maintain consistent focus over a long period of time.
+
+- **With temperature mode:** AMFOC01 can monitor the temperature of the surrounding environment and automatically refocus in case of its change. This is especially useful during long-term observation or photography, when the temperature can change throughout the night.
+
+- **For eye observation:** When exchanging eyepieces, it is often necessary to make a significant refocus. The focuser can be set for individual eyepieces and automatically refocuses to a preset position when they are exchanged. This simplifies and speeds up the observation process.
+
+- **With a wired controller:** It is possible to connect a wired controller to the focuser, which allows for fine focusing without touching the telescope, thereby eliminating vibrations and movement that could hinder observation.
+
+
 ## Installation and Connection to the Telescope
 AMFOC01 is designed to be easily connectable to a wide range of astronomical telescopes. Using 3D printing, customized mechanical adapters can be created for specific telescope models or optical systems.
 
 ## Open-Source
 AMFOC01 is developed as an open-source project. This means that all software, firmware (written in [TinyGo](https://tinygo.org/)), and hardware design are publicly available and can be modified according to the user's needs.
 
-## Ways of Use
+## Applications
 AMFOC01 can be used in a variety of scenarios where precise focusing of optical systems is needed. This device is primarily intended for astronomical telescopes but can also be used in other optical devices. Using 3D printing, mechanical adapters for specific telescope models or other optical systems can be quickly and easily created.
 
 ## Technical Parameters
