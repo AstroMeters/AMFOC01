@@ -59,3 +59,8 @@ The device is operated using four buttons and an OLED display, which displays th
 The firmware is written in [TinyGo](https://tinygo.org/), which is a compiler and runtime that allows writing applications for small systems in the Go language. The firmware is open-source and can be found [here](/fw/).
 
 AMFOC01 is designed to be easily connectable to a wide range of astronomical telescopes. Using 3D printing, customized mechanical adapters can be created for specific telescope models or optical systems. This makes the focuser easily adaptable to your specific needs.
+
+
+### Schematics 
+
+[![AMFOC01 schematics](/doc/gen/AMFOC01-schematic.svg)](/doc/gen/AMFOC01-schematic.pdf)
