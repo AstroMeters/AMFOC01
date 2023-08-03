@@ -7,16 +7,16 @@ github_repo: AMFOC01
 github_url: https://github.com/AstroMeters/AMFOC01
 homepage: false
 images:
+- fw/MoonLite/src/tinygo.org/x/drivers/examples/ili9341/slideshow/slideshow.jpg
 - fw/MoonLite/src/tinygo.org/x/tinyfont/examples/unicode_font/unicode_font.jpg
 - fw/MoonLite/src/tinygo.org/x/tinyfont/examples/unicode_font2/unicode_font2.jpg
-- fw/MoonLite/src/tinygo.org/x/drivers/examples/ili9341/slideshow/slideshow.jpg
-- fw/MoonLite/src/tinygo.org/x/tinyfont/images/tinyfont.png
-- fw/MoonLite/src/tinygo.org/x/tinyfont/images/rubikmoonrocks.png
 - doc/gen/img/AMFOC01-bottom.png
 - doc/gen/img/AMFOC01-top.png
+- fw/MoonLite/src/tinygo.org/x/tinyfont/images/tinyfont.png
+- fw/MoonLite/src/tinygo.org/x/tinyfont/images/rubikmoonrocks.png
 - doc/gen/AMFOC01-schematic.svg
-- doc/gen/img/AMFOC01-top.svg
 - doc/gen/img/AMFOC01-bottom.svg
+- doc/gen/img/AMFOC01-top.svg
 - hw/cam_profi/docs/master-assembly_page_02.svg
 - hw/cam_profi/docs/master-assembly_page_01.svg
 mark: 50
