@@ -9,3 +9,6 @@
 [submodule "fw/MoonLite/src/tinygo.org/x/tinyfont"]
 	path = fw/MoonLite/src/tinygo.org/x/tinyfont
 	url = git@github.com:tinygo-org/tinyfont.git
+[submodule "fw/MoonLiteArduino/MoonLite/lib/Adafruit-GFX-Library"]
+	path = fw/MoonLiteArduino/MoonLite/lib/Adafruit-GFX-Library
+	url = git@github.com:adafruit/Adafruit-GFX-Library.git

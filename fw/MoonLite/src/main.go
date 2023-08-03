@@ -16,8 +16,9 @@ import (
 
 	//"tinygo.org/x/drivers/st7789"
 	"math/big"
-	//"strconv"
+	"strconv"
 	//"reflect"
+	"github.com/13rac1/fastmath"
 	"strings"
 
 	//"tinygo.org/x/drivers/ds18b20"
@@ -27,8 +28,8 @@ import (
 	// "tinygo.org/x/tinyfont/freeserif"
 	// "tinygo.org/x/tinyfont/gophers"
 
-	// "tinygo.org/x/tinyfont"
-	// "tinygo.org/x/tinyfont/freesans"
+	//"tinygo.org/x/tinyfont"
+	//"tinygo.org/x/tinyfont/freesans"
 	// "tinygo.org/x/tinyfont/freemono"
 	// "tinygo.org/x/tinyfont/freesans"
 	// "tinygo.org/x/tinyfont/freeserif"
@@ -55,6 +56,13 @@ const (
 	SPI_MISO = machine.GPIO4
 
 	MOTOR_EN = machine.GPIO3
+
+	BUZZER = machine.GPIO14
+
+	BTN_A machine.Pin = machine.GPIO12
+	BTN_B machine.Pin = machine.GPIO13
+	BTN_C machine.Pin = machine.GPIO8
+	BTN_D machine.Pin = machine.GPIO15
 )
 
 type focuser_status struct {
@@ -106,10 +114,10 @@ func CalculateTemperature(adcValue uint16) float64 {
 
 func init_motor(motor *tmc5130.Device, display sh1106.Device) {
 
-	motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE, 0x0000)        //GCONF
-	motor.SetRegister(tmc5130.CHOPCONF|tmc5130.WRITE, 0x000101D5) //CHOPCONF: TOFF=5, HSTRT=5, HEND=3, TBL=2, CHM=0 (spreadcycle)
+	motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE, 0b000000000000000000) //GCONF
+	motor.SetRegister(tmc5130.CHOPCONF|tmc5130.WRITE, 0x000101D5)        //CHOPCONF: TOFF=5, HSTRT=5, HEND=3, TBL=2, CHM=0 (spreadcycle)
 	//motor.SetRegister(0x90,0x00070603); //IHOLD_IRUN: IHOLD=3, IRUN=10 (max.current), IHOLDDELAY=6
-	//motor.SetRegister(0x90,(2 &0b11111)<<0|(2 &0b11111)<<8|(1&0b1111)<<16);
+	//motor.SetRegister(0x90,(2 &0b11111)<<0|(31 &0b11111)<<8|(1&0b1111)<<16);
 	motor.SetCurrent(0, 100, 10)
 	motor.SetRegister(tmc5130.TPOWERDOWN|tmc5130.WRITE, 10)
 	motor.SetRegister(tmc5130.PWM_CONF|tmc5130.WRITE, 0x00000000)
@@ -119,7 +127,7 @@ func init_motor(motor *tmc5130.Device, display sh1106.Device) {
 	motor.SetRegister(tmc5130.A1|tmc5130.WRITE, 1000)
 	motor.SetRegister(tmc5130.V1|tmc5130.WRITE, 100000)
 	motor.SetRegister(tmc5130.AMAX|tmc5130.WRITE, 5000)
-	motor.SetRegister(tmc5130.VMAX|tmc5130.WRITE, 100000)
+	motor.SetRegister(tmc5130.VMAX|tmc5130.WRITE, 500000)
 	motor.SetRegister(tmc5130.D1|tmc5130.WRITE, 1400)
 	motor.SetRegister(tmc5130.VSTOP|tmc5130.WRITE, 10)
 
@@ -128,6 +136,9 @@ func init_motor(motor *tmc5130.Device, display sh1106.Device) {
 	motor.SetRegister(tmc5130.XACTUAL|tmc5130.WRITE, 0)
 	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE, 0)
 	//	motor.SetRegister(tmc5130.XTARGET|tmc5130.WRITE,10000);
+
+	//motor.SetXTARGET(5000000)
+	//#time.Sleep(time.Millisecond * 1000)
 
 }
 
@@ -152,6 +163,15 @@ func main() {
 	ui := user_interface.New(display)
 	ui.Configure()
 
+	// Nastaveni pipaku (jeste nefunguje)
+	pwm7 := machine.PWM7
+	pwm7_ch_buzzer, _ := pwm7.Channel(BUZZER)
+	pwm7.Configure(machine.PWMConfig{Period: 1e9 / 400})
+
+	pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2)
+	time.Sleep(time.Millisecond * 500)
+	pwm7.Set(pwm7_ch_buzzer, 0)
+
 	ser := machine.Serial
 
 	var FocuserStatus focuser_status
@@ -161,31 +181,49 @@ func main() {
 
 	ext_pwr_det := machine.GPIO1
 	ext_pwr_det.Configure(machine.PinConfig{Mode: machine.PinInput})
+	ext_usb_det := machine.GPIO21
+	ext_usb_det.Configure(machine.PinConfig{Mode: machine.PinInput})
 
 	pin_temp_internal := TEMP_INTERNAL
 	pin_temp_internal.Configure(machine.PinConfig{Mode: machine.PinAnalog})
 	//analog_value := machine.ADC{TEMP_INTERNAL}.Get()
 
-	pin_btn_a := machine.BTN_A
+	pin_btn_a := BTN_A
 	pin_btn_a.Configure(machine.PinConfig{Mode: machine.PinInput})
 	pin_btn_a.SetInterrupt(machine.PinRising, func(p machine.Pin) {
-		ui.Btn_down()
+		//pwm7.Configure(machine.PWMConfig{Period: 1e9 / 400})
+		//pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2 )
+		//time.Sleep(time.Millisecond*100)
+		//pwm7.Set(pwm7_ch_buzzer, 0 )
+		ui.Btn_back()
 	})
-	pin_btn_b := machine.BTN_B
+	pin_btn_b := BTN_B
 	pin_btn_b.Configure(machine.PinConfig{Mode: machine.PinInput})
 	pin_btn_b.SetInterrupt(machine.PinRising, func(p machine.Pin) {
-		ui.Btn_up()
-	})
-	pin_btn_c := machine.BTN_C
-	pin_btn_c.Configure(machine.PinConfig{Mode: machine.PinInput})
-	pin_btn_c.SetInterrupt(machine.PinRising, func(p machine.Pin) {
+		//pwm7.Configure(machine.PWMConfig{Period: 1e9 / 400})
+		//pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2 )
+		//time.Sleep(time.Millisecond*100)
+		//pwm7.Set(pwm7_ch_buzzer, 0 )
 		ui.Btn_set()
 	})
+	pin_btn_c := BTN_C
+	pin_btn_c.Configure(machine.PinConfig{Mode: machine.PinInput})
+	pin_btn_c.SetInterrupt(machine.PinRising, func(p machine.Pin) {
+		//pwm7.Configure(machine.PWMConfig{Period: 1e9 / 400})
+		//pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2 )
+		//time.Sleep(time.Millisecond*100)
+		//pwm7.Set(pwm7_ch_buzzer, 0 )
+		ui.Btn_down()
+	})
 
-	pin_btn_d := machine.GPIO29
+	pin_btn_d := BTN_D
 	pin_btn_d.Configure(machine.PinConfig{Mode: machine.PinInputPullup})
 	pin_btn_d.SetInterrupt(machine.PinFalling, func(p machine.Pin) {
-		ui.Btn_back()
+		//pwm7.Configure(machine.PWMConfig{Period: 1e9 / 400})
+		//pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2 )
+		//time.Sleep(time.Millisecond*100)
+		//pwm7.Set(pwm7_ch_buzzer, 0 )
+		ui.Btn_up()
 	})
 
 	BTN_EXT.Configure(machine.PinConfig{Mode: machine.PinOutput})
@@ -212,7 +250,7 @@ func main() {
 	pwm2.Configure(machine.PWMConfig{Period: 1e9 / 100})
 
 	ch2, _ := pwm2.Channel(pin_led_top)
-	var blink_percent uint32
+	var blink_percent uint8
 	blink_percent = 0
 	pwm2.Set(ch2, pwm2.Top())
 
@@ -222,6 +260,8 @@ func main() {
 
 	var last_ext_pwr bool
 	last_ext_pwr = false
+	var last_usb_pwr bool
+	last_usb_pwr = false
 
 	ui.PrepareScreen()
 	time.Sleep(time.Second * 1)
@@ -230,21 +270,64 @@ func main() {
 
 	for {
 
-		if last_ext_pwr != ext_pwr_det.Get() && ext_pwr_det.Get() {
-			init_motor(motor, display)
+		if last_ext_pwr != ext_pwr_det.Get() {
 			last_ext_pwr = ext_pwr_det.Get()
+			if ext_pwr_det.Get() {
+				init_motor(motor, display)
+
+				pwm7.Configure(machine.PWMConfig{Period: 1e9 / 400})
+				pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2)
+				time.Sleep(time.Millisecond * 10)
+				pwm7.Configure(machine.PWMConfig{Period: 1e9 / 500})
+				time.Sleep(time.Millisecond * 10)
+				pwm7.Set(pwm7_ch_buzzer, 0)
+
+			} else {
+				pwm7.Configure(machine.PWMConfig{Period: 1e9 / 500})
+				pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2)
+				time.Sleep(time.Millisecond * 100)
+				pwm7.Configure(machine.PWMConfig{Period: 1e9 / 400})
+				pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2)
+				time.Sleep(time.Millisecond * 100)
+				pwm7.Set(pwm7_ch_buzzer, 0)
+			}
 		}
 
-		FocuserStatus.actual_pos = int(motor.GetXACTUAL().XACTUAL / int32(FocuserStatus.scale))
+		if last_usb_pwr != ext_usb_det.Get() {
+			last_usb_pwr = ext_usb_det.Get()
+			if ext_usb_det.Get() {
+
+				pwm7.Configure(machine.PWMConfig{Period: 1e9 / 400})
+				pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2)
+				time.Sleep(time.Millisecond * 10)
+				pwm7.Configure(machine.PWMConfig{Period: 1e9 / 500})
+				time.Sleep(time.Millisecond * 10)
+				pwm7.Set(pwm7_ch_buzzer, 0)
+
+			} else {
+				pwm7.Configure(machine.PWMConfig{Period: 1e9 / 500})
+				pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2)
+				time.Sleep(time.Millisecond * 100)
+				pwm7.Configure(machine.PWMConfig{Period: 1e9 / 400})
+				pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2)
+				time.Sleep(time.Millisecond * 100)
+				pwm7.Set(pwm7_ch_buzzer, 0)
+			}
+		}
+
+		//FocuserStatus.actual_pos = int(motor.GetXACTUAL().XACTUAL / int32(FocuserStatus.scale))
+		FocuserStatus.actual_pos = int(motor.GetXACTUAL().XACTUAL)
+		//println("POS>", FocuserStatus.actual_pos)
 		temp = CalculateTemperature(machine.ADC{TEMP_INTERNAL}.Get())
 		//println("POS>", FocuserStatus.actual_pos)
 
-		// display.ClearBuffer()
-		// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AstroMeters", color.RGBA{100, 100, 100, 100})
-		// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 30, "Temp: "+strconv.Itoa(temp)+" C", color.RGBA{255, 255, 255, 255})
-		// tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 47, "pos: "+strconv.Itoa(FocuserStatus.actual_pos/1000)+"", color.RGBA{255, 255, 255, 255})
-		// display.Display()
-		ui.SetData(float64(temp), -100, FocuserStatus.actual_pos, ext_pwr_det.Get())
+		//display.ClearBuffer()
+		//tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 13, "AstroMeters", color.RGBA{100, 100, 100, 100})
+		//tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 30, "Temp: "+strconv.Itoa(temp)+" C", color.RGBA{255, 255, 255, 255})
+		//tinyfont.WriteLine(&display, &freesans.Regular9pt7b, 0, 47, "pos: "+strconv.Itoa(FocuserStatus.actual_pos/1000)+"", color.RGBA{255, 255, 255, 255})
+		//display.Display()
+
+		ui.SetData(float64(temp), -100, FocuserStatus.actual_pos, ext_pwr_det.Get(), ext_usb_det.Get())
 		//ui.Action()
 
 		if ser.Buffered() > 0 {
@@ -270,7 +353,33 @@ func main() {
 					motor.SetXTARGET(FocuserStatus.new_pos * FocuserStatus.scale)
 
 				case "FQ":
-					motor.SetXTARGET(int(motor.GetXACTUAL().XACTUAL))
+					if ext_pwr_det.Get() {
+
+						motor.SetXTARGET(int(motor.GetXACTUAL().XACTUAL))
+
+						pwm7.Configure(machine.PWMConfig{Period: 1e9 / 400})
+						pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2)
+						time.Sleep(time.Millisecond * 100)
+						pwm7.Configure(machine.PWMConfig{Period: 1e9 / 500})
+						pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2)
+						time.Sleep(time.Millisecond * 100)
+						pwm7.Set(pwm7_ch_buzzer, 0)
+					} else {
+						fmt.Printf("Power supply is missing.. Try to connect it")
+
+						pwm7.Configure(machine.PWMConfig{Period: 1e9 / 400})
+						pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2)
+						time.Sleep(time.Millisecond * 100)
+						pwm7.Configure(machine.PWMConfig{Period: 1e9 / 500})
+						pwm7.Set(pwm7_ch_buzzer, pwm7.Top()/2)
+						time.Sleep(time.Millisecond * 100)
+						pwm7.Set(pwm7_ch_buzzer, 0)
+					}
+
+					number := 42
+					str := strconv.Itoa(number)
+					println(str)
+
 					//mot_en.High()
 					//motor.SetRegister(tmc5130.GCONF|tmc5130.WRITE, 0x8000)
 					//time.Sleep(10 * time.Millisecond)
@@ -384,18 +493,18 @@ func main() {
 			}
 		}
 		//println("TEXT>", "  ADC: ", input0.Get())
-		println(pin_btn_a.Get(), pin_btn_b.Get(), pin_btn_c.Get(), pin_btn_d.Get())
-		println(blink_percent, pwm2.Top())
+		//println(pin_btn_a.Get(), pin_btn_b.Get(), pin_btn_c.Get(), pin_btn_d.Get())
+		//println(uint32(fastmath.Sin8(blink_percent))<<7, pwm2.Top())
 		//println(machine.ADC{TEMP_INTERNAL}.Get())
 		//println(fmt.Sprintf("%v", CalculateTemperature(machine.ADC{TEMP_INTERNAL}.Get())))
 
 		time.Sleep(time.Millisecond * 10)
 
-		pwm2.Set(ch2, blink_percent)
-		blink_percent += 500
-		if blink_percent > 62300/2 {
-			blink_percent = 0
-		}
+		pwm2.Set(ch2, uint32(fastmath.Sin8(blink_percent))<<7)
+		blink_percent += 2
+		// if blink_percent > 255 {
+		// 	blink_percent = 0
+		// }
 
 		ui.Process()
 	}

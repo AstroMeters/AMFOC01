@@ -42,10 +42,11 @@ const (
 	BTN_A Pin = GPIO12
 	BTN_B Pin = GPIO13
 	BTN_C Pin = GPIO8
-	BTN_D Pin = GPIO29
+	BTN_D Pin = GPIO15
 
 	// Onboard LED
-	LED Pin = GPIO25
+	LED Pin = GPIO20
+	LED_B Pin = GPIO20
 
 	// Onboard crystal oscillator frequency, in MHz.
 	xoscFreq = 12 // MHz

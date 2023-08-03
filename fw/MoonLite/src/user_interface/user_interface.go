@@ -6,6 +6,7 @@ import (
 	//"strings"
 	//"machine"
 	//"time"
+	//"reflect"
 	"fmt"
 	"image/color"
 	"tinygo.org/x/drivers/sh1106"
@@ -175,6 +176,7 @@ type Device struct {
 	temperature_out float64
 	motor_position  int
 	ext_pwr         bool
+	usb_pwr         bool
 	//last_update time.time
 }
 
@@ -248,17 +250,18 @@ func New(display sh1106.Device) *Device {
 		MaxCursor: 3,
 		Name:      "Ocular list",
 		Type:      NODE_TREE,
-		Draw:      d.DrawHomeScreen,
+		//Draw:      d.DrawHomeScreen,
 	}
 
 	ocular_select := &DataObject{
 		MaxCursor: 3,
 		Name:      "Select Ocular",
 		Type:      NODE_TREE,
+		Draw:      d.PrepareScreen,
 	}
 
-	d.tree.Insert(d.tree.Roots[0].Children[1], ocular_list)
-	d.tree.Insert(d.tree.Roots[0].Children[1], ocular_select)
+	d.tree.Insert(d.tree.Roots[0].Children[2], ocular_list)
+	d.tree.Insert(d.tree.Roots[0].Children[2], ocular_select)
 
 	d.tree.SetDefaultPosition(d.tree.Roots[0].Children[0])
 
@@ -268,11 +271,12 @@ func New(display sh1106.Device) *Device {
 	return d
 }
 
-func (d *Device) SetData(temp_in float64, temp_out float64, pos int, ext_pwr bool) {
+func (d *Device) SetData(temp_in float64, temp_out float64, pos int, ext_pwr bool, usb_pwr bool) {
 	d.temperature_in = temp_in
 	d.temperature_out = temp_out
 	d.motor_position = pos
 	d.ext_pwr = ext_pwr
+	d.usb_pwr = usb_pwr
 }
 
 func (d *Device) GetDevice() *Device {
@@ -285,8 +289,13 @@ func (d *Device) SetScreen(page int) {
 }
 
 func (d *Device) Btn_set() {
+	//println("Nastavit")
+	//println("SET")
+
 	if len(d.tree.CurrentNode.Children) > 0 {
 		d.tree.CurrentNode = d.tree.CurrentNode.Children[0]
+	} else {
+		//println("Není následovník")
 	}
 	//d.DrawMenuInfo()
 	d.Process()
@@ -294,6 +303,7 @@ func (d *Device) Btn_set() {
 }
 
 func (d *Device) Btn_back() {
+	//println("BACK")
 	if d.tree.CurrentNode.Parent != nil {
 		d.tree.CurrentNode = d.tree.CurrentNode.Parent
 	}
@@ -319,10 +329,12 @@ func (d *Device) Btn_down() {
 
 func (d *Device) Process() {
 	if d.tree.CurrentNode.Data.Draw == nil {
+		//println("Drawer není")
 		d.DrawMenuInfo()
 	} else {
-		//d.tree.CurrentNode.Data.Draw()
-		d.DrawHomeScreen()
+		//println("DRAW>")
+		d.tree.CurrentNode.Data.Draw()
+		//d.DrawMenuInfo()
 	}
 }
 
@@ -344,6 +356,7 @@ func (d *Device) DrawMenuInfo() {
 	d.Clear()
 	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 13, strconv.Itoa(d.tree.Cursor), color.RGBA{100, 100, 100, 100})
 	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 43, d.tree.CurrentNode.Data.Name, color.RGBA{100, 100, 100, 100})
+	//tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 50, strconv.Itoa(len(d.tree.CurrentNode.Children)), color.RGBA{100, 100, 100, 100})
 	d.Display()
 }
 
@@ -359,10 +372,17 @@ func (d *Device) DrawSplashScreen() {
 
 func (d *Device) DrawHomeScreen() {
 	d.Clear()
-	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 13, "HS", color.RGBA{100, 100, 100, 100})
-	//tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 30, "Temp: "+strconv.Itoa(int(d.temperature_in))+" C", color.RGBA{255, 255, 255, 255})
-	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 47, "pos: "+strconv.Itoa(d.GetDevice().motor_position)+"", color.RGBA{255, 255, 255, 255})
-	//tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 63, BoolToString(d.GetDevice().ext_pwr), color.RGBA{255, 255, 255, 255})
+	dev := d.GetDevice()
+	//println(dev.motor_position)
+	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 13, "AMFOC01", color.RGBA{100, 100, 100, 100})
+	//tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 30, "Temp: "+strconv.Itoa(int(dev.temperature_in))+" C", color.RGBA{255, 255, 255, 255})
+	//str_motor := reflect.ValueOf(dev.motor_position).String()
+	//println(str_motor)
+	//tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 47, "str_motor", color.RGBA{255, 255, 255, 255})
+	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 63, BoolToString(dev.ext_pwr), color.RGBA{255, 255, 255, 255})
+	tinyfont.WriteLine(&d.display, &freesans.Regular9pt7b, 0, 47, BoolToString(dev.ext_pwr), color.RGBA{255, 255, 255, 255})
+
+	//println(&d.motor_position)
 
 	d.Display()
 }
