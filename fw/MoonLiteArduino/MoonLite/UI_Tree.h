@@ -9,10 +9,6 @@
 //extern Adafruit_SH1106G display;
 
 
-void draw_default(ToolSet* toolset){
-
-}
-
 
 class Node {
 public:
@@ -22,10 +18,25 @@ public:
   Node* right;
   bool leaf;
   String name;
-  void (*drawer)();
+  void (*drawer)(ToolSet *toolset, Node *currentNode);
+  void (*left_action)() = nullptr;
+  void (*right_action)() = nullptr;
+  void (*left_action_up)() = nullptr;
+  void (*right_action_up)() = nullptr;
+  void (*set_action)() = nullptr;
+  void (*set_action_up)() = nullptr;
 
-  Node(String n, bool leaf, void (*dr)()) : parent(nullptr), left(nullptr), right(nullptr), name(n), leaf(leaf), drawer(dr) {}
-  Node(String n, bool leaf) : parent(nullptr), left(nullptr), right(nullptr), name(n), leaf(leaf), drawer(nullptr) {}
+  Node(String n, bool leaf, void (*dr)(ToolSet *toolset, Node *currentNode)) :
+          parent(nullptr), left(nullptr), right(nullptr), name(n), leaf(leaf), drawer(dr) {}
+  
+  Node(String n, bool leaf, void (*dr)(ToolSet *toolset, Node *currentNode), void (*left_action)(), void(*right_action)(), void (*set_action)()) :
+          parent(nullptr), left(nullptr), right(nullptr), name(n), leaf(leaf), drawer(dr), left_action(left_action), right_action(right_action), set_action(set_action) {}
+  
+  Node(String n, bool leaf, void (*dr)(ToolSet *toolset, Node *currentNode), void (*left_action)(), void (*left_action_up)(), void(*right_action)(), void (*right_action_up)(), void (*set_action)(), void (*set_action_up)()) :
+          parent(nullptr), left(nullptr), right(nullptr), name(n), leaf(leaf), drawer(dr), left_action(left_action), left_action_up(left_action_up), right_action(right_action), right_action_up(right_action_up), set_action(set_action), set_action_up(set_action_up) {}
+  
+  Node(String n, bool leaf) :
+          parent(nullptr), left(nullptr), right(nullptr), name(n), leaf(leaf), drawer(nullptr) {}
   
   void action() {
     // základní implementace
@@ -40,6 +51,39 @@ public:
     // display.display();
   }
 };
+
+
+
+
+
+
+
+void draw_default(ToolSet* toolset, Node* current_node){
+
+  toolset->display->clearDisplay();
+  
+  draw_top_row(toolset->display, current_node->name);
+
+  toolset->display->setCursor(1, 15);
+  toolset->display->printf("<    > ");
+  // display->setCursor(65, 15);
+  // display->printf("12V: %s", status->pwr_ext?"Conn":"N/C");
+  // display->setCursor(1, 27);
+  // display->printf("Mot: %s %d", status->motor_movement ? "In move" : "Steady ", status->motor_position);
+  // display->setCursor(1, 39);
+  // display->printf("Tep: %d C", status->temp);
+
+  toolset->display->display();  // Zobrazí zapsaný text
+
+}
+
+
+
+
+
+
+
+
 
 class Tree {
 public:
@@ -76,18 +120,37 @@ public:
   }
 
   void navigateLeft() {
-    if (current->left) {
+    if (current->left_action) {
+      current->left_action();
+    }
+    else if (current->left) {
       Serial.println("NAVIGACE DO STRANY");
       current = current->left;
       current->displayContent();
     }
   }
 
+  void navigateLeftUp() {
+    if (current->left_action_up) {
+      current->left_action_up();
+    }
+  }
+
   void navigateRight() {
-    if (current->right) {
+    if (current->right_action) {
+      current->right_action();
+    }
+    else if (current->right) {
       Serial.println("NAVIGACE DO STRANY");
       current = current->right;
       current->displayContent();
+    }
+  }
+
+
+  void navigateRightUp() {
+    if (current->right_action_up) {
+      current->right_action_up();
     }
   }
 
@@ -97,18 +160,25 @@ public:
       current->displayContent();
     }
   }
+  void navigateBackUp() {
+  }
 
   void navigateSet() {
     if(current->child.size()){
       current = current->child[0];
     }else{
-      current->action();
+      current->set_action();
     }
+  }
+
+  void navigateSetUp() {    
   }
 
   void Run(){
     if(current->drawer){
-      current->drawer();
+      current->drawer(toolset, current);
+    } else {
+      draw_default(toolset, current);
     }
 
    // Serial.println(current->parent->child.size());
