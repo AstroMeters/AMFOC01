@@ -43,7 +43,7 @@ jobs:
             cd ../tools
             python3 ./get.py
 
-            ln -s /home/runner/arduino-pico /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040/hardware/3.3.2
+            ln -s /home/runner/arduino-pico /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040/hardware/rp2040
             
             #tree ~/
 
