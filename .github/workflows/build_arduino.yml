@@ -4,7 +4,7 @@ on:
   push:
     paths:
     - 'fw/**'
-    - '**.yml'    
+    - '**.yml'
   workflow_dispatch:
   workflow_call:
     inputs:
@@ -14,7 +14,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:        
+    steps:
         - name: Checkout
           uses: actions/checkout@v3
           continue-on-error: true
@@ -31,8 +31,8 @@ jobs:
             arduino-cli core install rp2040:rp2040 --additional-urls https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json > /dev/null
 
             arduino-cli lib install 'Adafruit TinyUSB Library@2.2.1' 'TMCStepper' 'Adafruit GFX Library' 'Adafruit BusIO' 'Adafruit SH110X' 'RP2040_PWM' 'microDS18B20'
-            # arduino-cli lib install --git-url https://github.com/roman-dvorak/arduino-pico.git
 
+            # Smazat upstream verzi knihovny arduino-pico a nahradit ji vlastnim forkem
             rm -r /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040/hardware/*
             # mkdir -p /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040
             git clone https://github.com/roman-dvorak/arduino-pico.git -b add_amfoc01 /home/runner/arduino-pico
@@ -44,23 +44,28 @@ jobs:
             python3 ./get.py
 
             ln -s /home/runner/arduino-pico /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040/hardware/rp2040
-            
-            #tree ~/
 
             cd ${{ github.workspace }}
             
-            arduino-cli config dump
-            arduino-cli board listall
+            # Vypis konfigurace a podporovanych desek
+            # arduino-cli config dump
+            # arduino-cli board listall
             
             PLATFORM=rp2040:rp2040
             arduino-cli compile --verbose --warnings all --fqbn rp2040:rp2040:astrometers_amfoc01:flash=2097152_524288,usbstack=tinyusb --build-path fw  fw/MoonLiteArduino/MoonLite
 
             tree fw
             
+        - name: Prepare data for build
+            mkdir ~/package
+            cp fw/MoonLite.ino.u2f ~/package/AstroMeters_AMFOC01_commit.u2f
+            cp fw/upload.py ~/package/upload.py
+            echo "python3 upload.py --deploy AstroMeters_AMFOC01_commit.u2f --serial $1"  > ~/package/flash.sh
+            
         - name: Store data
           uses: actions/upload-artifact@v3
           with:
-            name: FW
+            name: Firmware
             path: |
-              fw/MoonLiteArduino
+              package
             retention-days: 1

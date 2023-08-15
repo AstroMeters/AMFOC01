@@ -12,7 +12,6 @@
 #include "data_struct.h"
 
 
-
 // Definice callback funkce pro zobrazení
 void displayPage1() {
     // kód pro zobrazení stránky 1
@@ -22,13 +21,7 @@ void displayPage2() {
     // kód pro zobrazení stránky 2
 }
 
-
 #include <microDS18B20.h>
-//#include "Menu.h"
-//#include "DisplayFunctions.h"
-
-
-
 
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
@@ -80,9 +73,7 @@ MicroDS18B20<INT_TEMP> sensor1;
 #define LED1_B 22
 int LEDstate = 0;
 
-
 Adafruit_USBD_CDC USBSer;
-
 
 #define BUFFER_SIZE 128
 
@@ -106,22 +97,6 @@ void beep(float freq, uint32_t duration){
   }
   digitalWrite(BUZZER, 0);
 }
-
-
-// void draw_top_row(Adafruit_SH1106G *display, String content){
-//   display->fillRoundRect(5, 0, 118, 11, 3, SH110X_WHITE);
-//   display->setTextColor(SH110X_BLACK, SH110X_WHITE);
-//   display->setTextSize(1);
-//   display->setCursor(9, 2);
-//   display->print( content );
-//   display->setTextColor(SH110X_WHITE);
-
-// }
-
-
-
-
-
 
 
 
@@ -153,7 +128,6 @@ void draw_init_page(Adafruit_SH1106G *display){
 }
 
 
-
 void draw_init_page(ToolSet *toolset, Node *currentNode){
   
   toolset->display->clearDisplay();
@@ -170,7 +144,7 @@ void draw_init_page(ToolSet *toolset, Node *currentNode){
   toolset->display->setCursor(23, 53);
   toolset->display->println(F("AstroMeters.eu"));
 
-  draw_top_row(toolset->display, "SN: ...");
+  draw_top_row(toolset->display, "SN: ....");
 
   toolset->display->display();  // Zobrazí zapsaný text
 }
@@ -537,6 +511,7 @@ bool btn_right_last = 1;
 
 void setup() {
 
+  TinyUSBDevice.setID(0x1209, 0xAE01);
 
   LittleFS.begin();
   //cfg.setAutoFormat(false);
