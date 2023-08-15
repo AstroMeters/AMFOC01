@@ -42,7 +42,9 @@ jobs:
             cd ../tools
             python3 ./get.py
             
-            tree ~/
+            #tree ~/
+
+            cd ~/
             
             PLATFORM=rp2040:rp2040
             arduino-cli compile --verbose --warnings all --fqbn rp2040:rp2040:astrometers_amfoc01:flash=2097152_524288,usbstack=tinyusb --build-path fw/MoonLiteArduino/build/  fw/MoonLiteArduino/MoonLite
