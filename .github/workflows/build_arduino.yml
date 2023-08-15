@@ -68,5 +68,5 @@ jobs:
           with:
             name: Firmware
             path: |
-              package
+              ~/package
             retention-days: 1
