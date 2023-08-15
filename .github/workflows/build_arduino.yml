@@ -4,7 +4,7 @@ on:
   push:
     paths:
     - 'fw/**'
-    - '*/*.yml'    
+    - '**.yml'    
   workflow_dispatch:
   workflow_call:
     inputs:
