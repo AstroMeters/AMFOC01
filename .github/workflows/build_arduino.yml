@@ -46,6 +46,9 @@ jobs:
 
             cd ${{ github.workspace }}
             
+            arduino-cli config dump
+            arduino-cli board listall
+            
             PLATFORM=rp2040:rp2040
             arduino-cli compile --verbose --warnings all --fqbn rp2040:rp2040:astrometers_amfoc01:flash=2097152_524288,usbstack=tinyusb --build-path fw  fw/MoonLiteArduino/MoonLite
 
