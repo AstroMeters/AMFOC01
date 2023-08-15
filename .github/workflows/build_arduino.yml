@@ -23,7 +23,7 @@ jobs:
         
         - name: Update githash.h and compile  
           run: |
-            set ARDUINO_LIBRARY_ENABLE_UNSAFE_INSTALL=true
+            export ARDUINO_LIBRARY_ENABLE_UNSAFE_INSTALL=true
             sudo snap install arduino-cli
             sudo apt-get install git tree
             
