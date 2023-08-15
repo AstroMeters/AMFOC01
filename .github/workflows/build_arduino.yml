@@ -1,0 +1,47 @@
+name: Build firmware
+
+on:
+  push:
+    paths:
+    - 'fw/**'
+    - '*/*.yml'    
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      build_type:
+        required: false
+        type: string
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:        
+        - name: Checkout
+          uses: actions/checkout@v3
+          continue-on-error: true
+          with:
+            submodules: True
+        
+        - name: Update githash.h and compile  
+          run: |
+        
+            sudo snap install arduino-cli
+            sudo apt install git tree
+            
+            arduino-cli core update-index --additional-urls https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json > /dev/null
+            arduino-cli core install rp2040:rp2040 --additional-urls https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json > /dev/null
+            
+            tree /
+            
+            PLATFORM=rp2040:rp2040
+            arduino-cli compile --verbose --warnings all --fqbn rp2040:rp2040:astrometers_amfoc01:flash=2097152_524288,usbstack=tinyusb --build-path fw/MoonLiteArduino/build/  fw/MoonLiteArduino/MoonLite
+
+            cd fw/MoonLiteArduino/build/
+            ls .
+            
+        - name: Store data
+          uses: actions/upload-artifact@v3
+          with:
+            name: FW
+            path: |
+              fw/MoonLiteArduino
+            retention-days: 1
