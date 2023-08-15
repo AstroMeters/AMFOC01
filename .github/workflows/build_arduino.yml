@@ -21,7 +21,7 @@ jobs:
           with:
             submodules: True
         
-        - name: Update githash.h and compile  
+        - name: Install dependencies and build
           run: |
             export ARDUINO_LIBRARY_ENABLE_UNSAFE_INSTALL=true
             sudo snap install arduino-cli
@@ -47,10 +47,9 @@ jobs:
             cd ~/
             
             PLATFORM=rp2040:rp2040
-            arduino-cli compile --verbose --warnings all --fqbn rp2040:rp2040:astrometers_amfoc01:flash=2097152_524288,usbstack=tinyusb --build-path fw/MoonLiteArduino/build/  fw/MoonLiteArduino/MoonLite
+            arduino-cli compile --verbose --warnings all --fqbn rp2040:rp2040:astrometers_amfoc01:flash=2097152_524288,usbstack=tinyusb --build-path fw  fw/MoonLiteArduino/MoonLite
 
-            cd fw/MoonLiteArduino/build/
-            ls .
+            tree fw
             
         - name: Store data
           uses: actions/upload-artifact@v3
