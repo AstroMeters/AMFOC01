@@ -59,9 +59,9 @@ jobs:
         - name: Prepare data for build
           run: |
             mkdir ~/package
-            cp fw/MoonLite.ino.u2f ~/package/AstroMeters_AMFOC01_commit.u2f
+            cp fw/MoonLite.ino.uf2 ~/package/AstroMeters_AMFOC01_commit.uf2
             cp fw/upload.py ~/package/upload.py
-            echo "python3 upload.py --deploy AstroMeters_AMFOC01_commit.u2f --serial $1"  > ~/package/flash.sh
+            echo "python3 upload.py --deploy AstroMeters_AMFOC01_commit.uf2 --serial $1"  > ~/package/flash.sh
             
         - name: Store data
           uses: actions/upload-artifact@v3
