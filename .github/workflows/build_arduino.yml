@@ -57,6 +57,7 @@ jobs:
             tree fw
             
         - name: Prepare data for build
+          run: |
             mkdir ~/package
             cp fw/MoonLite.ino.u2f ~/package/AstroMeters_AMFOC01_commit.u2f
             cp fw/upload.py ~/package/upload.py
