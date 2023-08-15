@@ -33,6 +33,7 @@ jobs:
             arduino-cli lib install 'Adafruit TinyUSB Library@2.2.1' 'TMCStepper' 'Adafruit GFX Library' 'Adafruit BusIO' 'Adafruit SH110X' 'RP2040_PWM' 'microDS18B20'
             # arduino-cli lib install --git-url https://github.com/roman-dvorak/arduino-pico.git
 
+            rm -r /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040
             mkdir -p /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040
             git clone https://github.com/roman-dvorak/arduino-pico.git -b add_amfoc01 /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040
             cd /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040
