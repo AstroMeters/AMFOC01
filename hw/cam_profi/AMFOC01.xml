@@ -2,8 +2,8 @@
 <export version="E">
   <design>
     <source>/github/workspace/hw/sch_pcb/AMFOC01.kicad_sch</source>
-    <date>Sun Jul  2 23:48:04 2023</date>
-    <tool>Eeschema 7.0.5.1-1-g8f565ef7f0-dirty-deb11</tool>
+    <date>Tue Aug 15 01:59:52 2023</date>
+    <tool>Eeschema 7.0.7-7.0.7~ubuntu23.04.1</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
         <title/>
