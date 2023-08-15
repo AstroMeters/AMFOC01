@@ -25,6 +25,7 @@ public:
   void (*right_action_up)() = nullptr;
   void (*set_action)() = nullptr;
   void (*set_action_up)() = nullptr;
+  void (*back_action)() = nullptr;
 
   Node(String n, bool leaf, void (*dr)(ToolSet *toolset, Node *currentNode)) :
           parent(nullptr), left(nullptr), right(nullptr), name(n), leaf(leaf), drawer(dr) {}
@@ -34,6 +35,9 @@ public:
   
   Node(String n, bool leaf, void (*dr)(ToolSet *toolset, Node *currentNode), void (*left_action)(), void (*left_action_up)(), void(*right_action)(), void (*right_action_up)(), void (*set_action)(), void (*set_action_up)()) :
           parent(nullptr), left(nullptr), right(nullptr), name(n), leaf(leaf), drawer(dr), left_action(left_action), left_action_up(left_action_up), right_action(right_action), right_action_up(right_action_up), set_action(set_action), set_action_up(set_action_up) {}
+  
+  Node(String n, bool leaf, void (*dr)(ToolSet *toolset, Node *currentNode), void (*left_action)(), void (*left_action_up)(), void(*right_action)(), void (*right_action_up)(), void (*set_action)(), void (*set_action_up)(), void (*set_action_back)()) :
+          parent(nullptr), left(nullptr), right(nullptr), name(n), leaf(leaf), drawer(dr), left_action(left_action), left_action_up(left_action_up), right_action(right_action), right_action_up(right_action_up), set_action(set_action), set_action_up(set_action_up), back_action(set_action_back) {}
   
   Node(String n, bool leaf) :
           parent(nullptr), left(nullptr), right(nullptr), name(n), leaf(leaf), drawer(nullptr) {}
@@ -155,6 +159,9 @@ public:
   }
 
   void navigateBack() {
+    if (current->back_action) {
+      current->back_action();
+    }
     if (current->parent) {
       current = current->parent;
       current->displayContent();

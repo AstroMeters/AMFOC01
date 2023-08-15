@@ -5,7 +5,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SH110X.h>
 #include "RP2040_PWM.h"
-
+#include "LittleFS.h"
 
 #include "UI_Tree.h"
 
@@ -43,7 +43,11 @@ Adafruit_SH1106G display = Adafruit_SH1106G(128, 64, &SPI, OLED_DC, OLED_RESET, 
 Data status{};
 OcularsData ocularsStatus;
 ToolSet toolset;
+Configuration config;
 
+LittleFSConfig cfg;
+
+int cursor{0};
 
 #define MOTOR_CS  5
 #define MOTOR_EN  3
@@ -93,11 +97,13 @@ Tree menu(&toolset);
 // DisplayData displayData;
 
 void beep(float freq, uint32_t duration){
-  PWM_Instance->enablePWM();
-  PWM_Instance->setPWM(BUZZER, freq, 50.0f);
-  delay(duration);
-  PWM_Instance->setPWM(BUZZER, freq, 0.0f);
-  PWM_Instance->disablePWM();
+  if(config.buzzer){
+    PWM_Instance->enablePWM();
+    PWM_Instance->setPWM(BUZZER, freq, 50.0f);
+    delay(duration);
+    PWM_Instance->setPWM(BUZZER, freq, 0.0f);
+    PWM_Instance->disablePWM();
+  }
   digitalWrite(BUZZER, 0);
 }
 
@@ -260,10 +266,76 @@ void draw_child1(ToolSet *toolset, Node* current){
   toolset->display->setCursor(1, 39);
   toolset->display->printf("Tep: %d C", toolset->status->temp);
 
-  toolset->display->display();  // Zobrazí zapsaný text
+  toolset->display->display(); 
 }
 
 
+void draw_config_1st(ToolSet *toolset, Node* current){
+  toolset->display->clearDisplay();
+  
+  draw_top_row(toolset->display, "Configuration 1");
+
+  toolset->display->setCursor(1, 13);
+  toolset->display->printf("%sBuzzer: %s", (cursor==0)?"> ":"", toolset->config->buzzer?"On":"Off");
+  toolset->display->setCursor(1, 24);
+  toolset->display->printf("%sStpRng: %i", (cursor==1)?"> ":"", toolset->config->step_range);
+  toolset->display->setCursor(1, 35);
+  toolset->display->printf("%sMotSpd: %i", (cursor==2)?"> ":"", toolset->config->default_speed_step);
+  toolset->display->setCursor(1, 46);
+  toolset->display->printf("%SSteps/mm: %i", (cursor==3)?"> ":"", toolset->config->steps_per_mm);
+
+  toolset->display->display(); 
+}
+
+void draw_config_set(){
+  cursor += 1;
+  if(cursor>3){
+    cursor=0;
+  };
+}
+void draw_config_left(){
+    switch (cursor) {
+      case 0:
+        toolset.config->buzzer = false;
+        break;
+      case 1:
+        toolset.config->step_range -= 1000;
+        break;
+      case 2:
+        toolset.config->default_speed_step -= 1;
+        if(toolset.config->default_speed_step<0) {toolset.config->default_speed_step=0;}
+        break;
+      case 3:
+        toolset.config->steps_per_mm -= 10;
+        break;
+      default:
+        cursor = 0;
+        break;
+    }
+}
+void draw_config_right(){
+    switch (cursor) {
+      case 0:
+        toolset.config->buzzer = true;
+        break;
+      case 1:
+        toolset.config->step_range += 1000;
+        break;
+      case 2:
+        toolset.config->default_speed_step += 1;
+        if(toolset.config->default_speed_step>10) {toolset.config->default_speed_step=10;}
+        break;
+      case 3:
+        toolset.config->steps_per_mm += 10;
+        break;
+      default:
+        cursor = 0;
+        break;
+    }
+}
+void draw_config_back(){
+    save_config(&config);
+}
 
 /*
 root
@@ -287,10 +359,38 @@ root
 
 */
 
+
+
+void load_config(Configuration *config){
+  File file = LittleFS.open("/configuration.dat", "r");
+  if (!file) {
+    Serial.println("File open failed!");
+    return;
+  }
+
+  file.read((uint8_t*)config, sizeof(config));
+  file.close();
+}
+
+void save_config(Configuration *config){
+  File file = LittleFS.open("/configuration.dat", "w");
+    if (!file) {
+    Serial.println("File open failed for write!");
+    return;
+  }
+
+  file.write((uint8_t*)config, sizeof(config));
+  file.close();
+}
+
+
 void setupMenu() {
+
   toolset.display = &display;
   toolset.status = &status;
   toolset.oculars = &ocularsStatus;
+  toolset.config = &config;
+
 
   Node* root = new Node("Root", false, draw_init_page);
   Node* home = new Node("Home", false, draw_home_page);
@@ -299,9 +399,8 @@ void setupMenu() {
   Node* oculars = new Node("Oculars", false);
   Node* oculars_action = new Node("Oculars - action", false, draw_ocular_action, oculars_action_previous, nullptr,  oculars_action_next, nullptr,  oculars_action_set, nullptr);
   Node* oculars_setting = new Node("Oculars - setting", false);
-  //Node* child1 = new Node("Child 1", false, draw_child1);
-  //Node* child1_1 = new Node("Child 1-1", true);
-  //Node* child2 = new Node("Child 2", true);
+  Node* config = new Node("Configuration", false);
+  Node* config_buzzer = new Node("Coonf. - 1st page", false, draw_config_1st, draw_config_left, nullptr, draw_config_right, nullptr, draw_config_set, nullptr, draw_config_back);
 
   menu.setRoot(root);
   menu.insertNode(root, home);
@@ -310,6 +409,8 @@ void setupMenu() {
   menu.insertNode(root, oculars);
       menu.insertNode(oculars, oculars_action);
       menu.insertNode(oculars, oculars_setting);
+  menu.insertNode(root, config);
+      menu.insertNode(config, config_buzzer);
   //menu.insertNode(root, child1);
   //    menu.insertNode(child1, child1_1);
   //menu.insertNode(root, child2);
@@ -372,7 +473,7 @@ void motor_init(){
 
   driver.en_pwm_mode(1);
   //driver.TCOOLTHRS(0xFFFFF); // 20bit max
-  driver.microsteps(128);
+  driver.microsteps(256);
   //driver.microsteps(64);
   //driver.XACTUAL(0);
   //driver.VACTUAL(0);
@@ -436,6 +537,13 @@ bool btn_right_last = 1;
 
 void setup() {
 
+
+  LittleFS.begin();
+  //cfg.setAutoFormat(false);
+  //LittleFS.setConfig(cfg);
+  load_config(&config);
+
+
   // Vypni motor!
   pinMode(MOTOR_EN, OUTPUT);
   digitalWrite(MOTOR_EN, HIGH);
@@ -471,17 +579,20 @@ void setup() {
   pwr_state_ext = digitalRead(PWR_PIN_EXT);
   pwr_state_ext_last = digitalRead(PWR_PIN_EXT);
 
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.setTimeout(10); // ms
   
   if(pwr_state_ext){
     motor_init();
   }
+  
 
   pinMode(BUZZER, OUTPUT);
   PWM_Instance = new RP2040_PWM(BUZZER, 400000, 50.0f);
   PWM_Instance->setPWM();
-  beep(1000.0f, 500);
+  beep(1000.0f, 100);
+  beep(1200.0f, 100);
+  beep(1400.0f, 200);
     
   sensor1.requestTemp();
   delay(1000);
@@ -491,7 +602,7 @@ void setup() {
 
 void update_led(){
   int duration = 3;
-  analogWrite(LED1_B, int(4095*sin(millis()/1000.0*2*3.1415/duration)) );
+  analogWrite(LED1_B, int(4095*sin(millis()/1000.0*4*3.1415/duration)) );
 }
 
 

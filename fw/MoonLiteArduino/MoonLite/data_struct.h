@@ -4,7 +4,15 @@
 
 #include <Adafruit_SH110X.h>
 #include <vector>
+#include "LittleFS.h"
 
+
+struct Configuration{
+  bool buzzer = 1;
+  int step_range = 1000000;
+  int default_speed_step = 5;
+  int steps_per_mm = 1000;
+};
 
 struct Data{
    bool motor_movement;
@@ -38,6 +46,7 @@ struct ToolSet{
   void* buzzer;
   Data* status;
   OcularsData* oculars;
+  Configuration* config;
 };
 
 
@@ -51,6 +60,7 @@ void draw_top_row(Adafruit_SH1106G *display, String content){
   display->setTextColor(SH110X_WHITE);
 
 }
+
 
 
 
