@@ -109,8 +109,8 @@ jobs:
           
       - name: "Rename output"
         run: |
-          for file in $(find ${{env.dir}} -type f); do sudo mv "${file}" "${file//${{env.project}}/${{env.branch}}}" ; done
-          for file in $(find ${{env.dir}}_docs -type f); do sudo mv "${file}" "${file//${{env.project}}/${{env.branch}}}" ; done
+          for file in $(find ${{env.dir}} -type f); do sudo mv "${file}" "${file//${{env.project}}/${{env.branch}}}" || true ; done
+          for file in $(find ${{env.dir}}_docs -type f); do sudo mv "${file}" "${file//${{env.project}}/${{env.branch}}}" || true ; done
           
       - uses: actions/upload-artifact@v3
         if: ${{ success() }}
@@ -170,7 +170,7 @@ jobs:
           dir: ${{ env.dir }}_ibom
           
       - name: "Rename output"
-        run: for file in $(find ${{env.dir}} -type f); do sudo mv "${file}" "${file//${{env.project}}/${{env.branch}}}" ; done
+        run: for file in $(find ${{env.dir}} -type f); do sudo mv "${file}" "${file//${{env.project}}/${{env.branch}}}" || true ; done
         
       - uses: actions/upload-artifact@v3
         if: ${{ success() }}
@@ -200,7 +200,7 @@ jobs:
           verbose: 3
 
       - name: "Rename output"
-        run: for file in $(find ${{env.dir}}_gerbers -type f); do sudo mv "${file}" "${file//${{env.project}}/${{env.branch}}}" ; done
+        run: for file in $(find ${{env.dir}}_gerbers -type f); do sudo mv "${file}" "${file//${{env.project}}/${{env.branch}}}" || true ; done
           
       - uses: actions/upload-artifact@v2
         if: ${{ success() }}
