@@ -2,7 +2,7 @@
 <export version="E">
   <design>
     <source>/github/workspace/hw/sch_pcb/AMFOC01.kicad_sch</source>
-    <date>Sat Aug 19 22:26:25 2023</date>
+    <date>Sat Aug 19 22:52:34 2023</date>
     <tool>Eeschema 7.0.7-7.0.7~ubuntu23.04.1</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
@@ -1720,7 +1720,7 @@
       <tstamps>b1dc151d-feac-41de-8e84-91ba4f212ec6</tstamps>
     </comp>
     <comp ref="U4">
-      <value>W25Q128JVS</value>
+      <value>W25Q64JVSSIQ</value>
       <footprint>Package_SO:SOIC-8_5.23x5.23mm_P1.27mm</footprint>
       <datasheet>http://www.winbond.com/resource-files/w25q128jv_dtr%20revc%2003272018%20plus.pdf</datasheet>
       <fields>
