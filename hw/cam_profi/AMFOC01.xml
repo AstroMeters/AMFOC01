@@ -2,7 +2,7 @@
 <export version="E">
   <design>
     <source>/github/workspace/hw/sch_pcb/AMFOC01.kicad_sch</source>
-    <date>Wed Aug 16 01:12:01 2023</date>
+    <date>Sat Aug 19 22:26:25 2023</date>
     <tool>Eeschema 7.0.7-7.0.7~ubuntu23.04.1</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
@@ -1186,7 +1186,7 @@
       <tstamps>eed55b93-f2a7-4c9b-91b0-6f14e99d32d0</tstamps>
     </comp>
     <comp ref="R11">
-      <value>100R</value>
+      <value>200R</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <fields>
         <field name="Obchod">TME</field>
@@ -1220,7 +1220,7 @@
       <tstamps>368d365a-e731-4546-8a56-e50997ddcd25</tstamps>
     </comp>
     <comp ref="R13">
-      <value>100k</value>
+      <value>5K1</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <fields>
         <field name="Obchod">TME</field>
@@ -1235,7 +1235,7 @@
       <tstamps>3aa6c350-7285-4543-90fc-bfddf9c4d625</tstamps>
     </comp>
     <comp ref="R14">
-      <value>10k</value>
+      <value>15k</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
       <property name="Sheetname" value=""/>
@@ -1246,7 +1246,7 @@
       <tstamps>3756e475-40ea-4cd5-99e9-578c0037c1e8</tstamps>
     </comp>
     <comp ref="R15">
-      <value>20k</value>
+      <value>10k</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
       <property name="Sheetname" value=""/>
@@ -1435,7 +1435,7 @@
       <tstamps>0454c055-8e72-4c81-9b90-55a9ec992df9</tstamps>
     </comp>
     <comp ref="R28">
-      <value>100R</value>
+      <value>200R</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <fields>
         <field name="Obchod">TME</field>
@@ -1450,7 +1450,7 @@
       <tstamps>2794efec-6f2d-45ab-91e9-28eaeba7efb7</tstamps>
     </comp>
     <comp ref="R29">
-      <value>100R</value>
+      <value>200R</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <fields>
         <field name="Obchod">TME</field>
@@ -1489,7 +1489,7 @@
       <tstamps>43a333e0-9587-42e4-8138-5b01c9ffbaf2</tstamps>
     </comp>
     <comp ref="R32">
-      <value>100R</value>
+      <value>200R</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <fields>
         <field name="Obchod">TME</field>
@@ -1504,7 +1504,7 @@
       <tstamps>cf553878-0003-4d18-aef3-ea35e640c536</tstamps>
     </comp>
     <comp ref="R33">
-      <value>100R</value>
+      <value>200R</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <fields>
         <field name="Obchod">TME</field>
@@ -1519,7 +1519,7 @@
       <tstamps>667bdbf8-fd8e-4de5-8d06-b80e858ab58e</tstamps>
     </comp>
     <comp ref="R34">
-      <value>0R15</value>
+      <value>1R</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <fields>
         <field name="Obchod">TME</field>
@@ -1534,7 +1534,7 @@
       <tstamps>4f8c6da9-8883-42f4-a991-c91aeb02bbdc</tstamps>
     </comp>
     <comp ref="R35">
-      <value>0R15</value>
+      <value>1R</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <fields>
         <field name="Obchod">TME</field>
@@ -1575,7 +1575,7 @@
       <tstamps>ece6ceda-2fa2-4a46-8a56-5ec2e655dc8c</tstamps>
     </comp>
     <comp ref="R38">
-      <value>10k</value>
+      <value>15k</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
       <property name="Sheetname" value=""/>
@@ -1586,7 +1586,7 @@
       <tstamps>9c71d503-a178-4107-8173-c829fd778a6a</tstamps>
     </comp>
     <comp ref="R39">
-      <value>20k</value>
+      <value>10k</value>
       <footprint>Resistor_SMD:R_0805_2012Metric</footprint>
       <libsource lib="Device" part="R_Small" description="Resistor, small symbol"/>
       <property name="Sheetname" value=""/>
@@ -1766,6 +1766,7 @@
       <property name="Value" value="AT24CS64-SSHM"/>
       <property name="Sheetname" value=""/>
       <property name="Sheetfile" value="AMFOC01.kicad_sch"/>
+      <property name="dnp"/>
       <property name="ki_description" value="I2C Serial EEPROM, 64Kb (8192x8) with Unique Serial Number, SO8"/>
       <property name="ki_keywords" value="I2C Serial EEPROM Nonvolatile Memory"/>
       <sheetpath names="/" tstamps="/"/>
