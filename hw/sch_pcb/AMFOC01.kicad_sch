@@ -6578,7 +6578,7 @@
     (property "Reference" "U4" (at 76.2 125.73 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "W25Q128JVS" (at 62.23 134.62 0)
+    (property "Value" "W25Q64JVSSIQ" (at 62.23 134.62 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "Package_SO:SOIC-8_5.23x5.23mm_P1.27mm" (at 68.58 134.62 0)
