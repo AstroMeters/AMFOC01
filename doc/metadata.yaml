@@ -10,12 +10,15 @@ images:
 - fw/MoonLite/src/tinygo.org/x/drivers/examples/ili9341/slideshow/slideshow.jpg
 - fw/MoonLite/src/tinygo.org/x/tinyfont/examples/unicode_font/unicode_font.jpg
 - fw/MoonLite/src/tinygo.org/x/tinyfont/examples/unicode_font2/unicode_font2.jpg
+- doc/sticker/qr_web.png
+- doc/sticker/sticker_back.png
 - doc/sticker/sticker_projection.png
 - doc/gen/img/AMFOC01-bottom.png
 - doc/gen/img/AMFOC01-top.png
 - fw/MoonLite/src/tinygo.org/x/tinyfont/images/tinyfont.png
 - fw/MoonLite/src/tinygo.org/x/tinyfont/images/rubikmoonrocks.png
 - doc/sticker/AMFOC01-F_Fab.svg
+- doc/sticker/sticker_back.svg
 - doc/sticker/AMFOC01-F_Cu.svg
 - doc/sticker/sticker_projection.svg
 - doc/sticker/AMFOC01-F_Silkscreen.svg
