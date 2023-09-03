@@ -3542,6 +3542,7 @@
   (no_connect (at 190.5 93.98) (uuid de33c500-4325-4044-a653-6b22afd161e7))
   (no_connect (at 228.6 114.3) (uuid e26a0783-d6d5-4813-af42-6b6f85a66df0))
   (no_connect (at 190.5 99.06) (uuid e81eda50-7271-4421-9766-e858176b473f))
+  (no_connect (at 228.6 127) (uuid edd0c299-d9e8-4b11-9910-8494a8d4e5f4))
   (no_connect (at 190.5 88.9) (uuid f2828d6a-0eb7-4a3a-a89b-c5c3aa27a7f4))
   (no_connect (at 190.5 86.36) (uuid f2ceaedc-8d2e-4235-b84c-0614f32e46a4))
   (no_connect (at 133.35 170.18) (uuid f4d66f9b-86bc-45d1-999b-85cf910e9fa2))
@@ -6031,7 +6032,7 @@
   )
 
   (symbol (lib_id "Device:R_Small") (at 113.03 71.12 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
+    (in_bom yes) (on_board yes) (dnp yes)
     (uuid 368d365a-e731-4546-8a56-e50997ddcd25)
     (property "Reference" "R12" (at 114.3 68.58 0)
       (effects (font (size 1.27 1.27)) (justify left))
@@ -10302,7 +10303,7 @@
   )
 
   (symbol (lib_id "Device:R_Small") (at 110.49 71.12 0) (unit 1)
-    (in_bom yes) (on_board yes) (dnp no)
+    (in_bom yes) (on_board yes) (dnp yes)
     (uuid eed55b93-f2a7-4c9b-91b0-6f14e99d32d0)
     (property "Reference" "R10" (at 105.41 68.58 0)
       (effects (font (size 1.27 1.27)) (justify left))
