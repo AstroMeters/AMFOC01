@@ -20,21 +20,24 @@ jobs:
           continue-on-error: true
           with:
             submodules: True
-        
+
         - name: Install dependencies and build
           run: |
             export ARDUINO_LIBRARY_ENABLE_UNSAFE_INSTALL=true
-            sudo snap install arduino-cli
+            sudo snap install arduino-cli tree yq
             sudo apt-get install git tree python3
+
+            ADIR=`arduino-cli config dump | yq eval .directories.data`
             
             arduino-cli core update-index --additional-urls https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json > /dev/null
             arduino-cli core install rp2040:rp2040 --additional-urls https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json > /dev/null
 
             arduino-cli lib install 'Adafruit TinyUSB Library@2.2.1' 'TMCStepper' 'Adafruit GFX Library' 'Adafruit BusIO' 'Adafruit SH110X' 'RP2040_PWM' 'microDS18B20'
 
-            # Smazat upstream verzi knihovny arduino-pico a nahradit ji vlastnim forkem
-            rm -r /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040/hardware/*
-            # mkdir -p /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040
+            
+            #sudo tree /home/runner/snap 
+            sudo rm -r ${ADIR}/packages/rp2040/hardware/*
+            # mkdir -p ${ADIR}/packages/rp2040
             git clone https://github.com/roman-dvorak/arduino-pico.git -b add_amfoc01 /home/runner/arduino-pico
             cd /home/runner/arduino-pico
             git submodule update --init
@@ -43,7 +46,7 @@ jobs:
             cd ../tools
             python3 ./get.py
 
-            ln -s /home/runner/arduino-pico /home/runner/snap/arduino-cli/39/.arduino15/packages/rp2040/hardware/rp2040
+            sudo ln -s /home/runner/arduino-pico ${ADIR}/packages/rp2040/hardware/rp2040
 
             cd ${{ github.workspace }}
             
@@ -52,21 +55,18 @@ jobs:
             # arduino-cli board listall
             
             PLATFORM=rp2040:rp2040
-            arduino-cli compile --verbose --warnings all --fqbn rp2040:rp2040:astrometers_amfoc01:flash=2097152_524288,usbstack=tinyusb --build-path fw  fw/MoonLiteArduino/MoonLite
+            arduino-cli compile --verbose --warnings all --fqbn rp2040:rp2040:astrometers_amfoc01:flash=2097152_524288,usbstack=tinyusb --build-path fw  fw/amfoc01
 
             tree fw
             
         - name: Prepare data for build
           run: |
-            mkdir ~/package
-            cp fw/MoonLite.ino.uf2 ~/package/AstroMeters_AMFOC01_commit.uf2
-            cp fw/upload.py ~/package/upload.py
-            echo "python3 upload.py --deploy AstroMeters_AMFOC01_commit.uf2 --serial \$1"  > ~/package/flash.sh
-            
-        - name: Store data
-          uses: actions/upload-artifact@v3
+            mkdir -p fw/build || true
+            mv fw/amfoc01.ino.uf2 fw/build/amfoc01.uf2
+            echo "python3 upload.py --serial "/dev/ttyACM0" --family RP2040 --deploy amfoc01.uf2" > fw/build/upload.sh
+            chmod +x fw/build/upload.sh
+        
+        - uses: stefanzweifel/git-auto-commit-action@v4
           with:
-            name: Firmware
-            path: |
-              ~/package
-            retention-days: 1
+            commit_message: "Bulid firmware"
+            file_pattern: 'fw/build'
