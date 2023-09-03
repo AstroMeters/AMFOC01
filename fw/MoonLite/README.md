@@ -1,2 +1,0 @@
-
-# MoonLite compatibile firmware
