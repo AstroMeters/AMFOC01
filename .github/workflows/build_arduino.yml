@@ -57,7 +57,6 @@ jobs:
             PLATFORM=rp2040:rp2040
             arduino-cli compile --verbose --warnings all --fqbn rp2040:rp2040:astrometers_amfoc01:flash=2097152_524288,usbstack=tinyusb --build-path fw  fw/amfoc01
 
-            tree fw
             
         - name: Prepare data for build
           run: |
@@ -65,6 +64,7 @@ jobs:
             mv fw/amfoc01.ino.uf2 fw/build/amfoc01.uf2
             echo "python3 upload.py --serial "/dev/ttyACM0" --family RP2040 --deploy amfoc01.uf2" > fw/build/upload.sh
             chmod +x fw/build/upload.sh
+            git pull
         
         - uses: stefanzweifel/git-auto-commit-action@v4
           with:
