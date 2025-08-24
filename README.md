@@ -1,5 +1,10 @@
 # AMFOC01: High quality Focuser for Astronomical Telescopes
 
+
+<p align="center">
+  <img width="200" height="200" alt="AstroMeters Logo" src="https://github.com/user-attachments/assets/2135c8e6-5789-47cd-ac9b-e2287eecc98f" />
+</p>
+
 AMFOC01 is a highly sophisticated focuser primarily designed for astronomical telescopes, although it can also be applied to other optical devices. It uses state-of-the-art technologies, such as the micro-stepping driver [TMC5130](https://www.trinamic.com/products/integrated-circuits/details/tmc5130/) for stepper motors and the [RP2040](https://www.raspberrypi.org/products/rp2040/) processor. These components ensure smooth and quiet operation without the unpleasant vibrations that are common with traditional stepper motors.
 
 The device is equipped with an OLED display and four buttons for easy user interaction. It can be connected to a computer via USB-C and controlled using software compatible with the MoonLight protocol, such as [KStars](https://edu.kde.org/kstars/) or [INDI](https://www.indilib.org/).
