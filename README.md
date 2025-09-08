@@ -61,8 +61,6 @@ The driver is powered by a voltage of 9-16V. A coaxial DC connector 5.5/2.1 is u
 
 The device is operated using four buttons and an OLED display, which displays the current position of the focuser, the temperature, and the power status. It can be connected to a computer via USB-C and controlled using software compatible with the [MoonLight](https://indilib.org/devices/focusers/moonlite-focuser.html) protocol.
 
-The firmware is written in [TinyGo](https://tinygo.org/), which is a compiler and runtime that allows writing applications for small systems in the Go language. The firmware is open-source and can be found [here](/fw/).
-
 AMFOC01 is designed to be easily connectable to a wide range of astronomical telescopes. Using 3D printing, customized mechanical adapters can be created for specific telescope models or optical systems. This makes the focuser easily adaptable to your specific needs.
 
 
